@@ -1,1 +1,1 @@
-90ff14a0e2b1b55d99dc3f1838d1eb47b574ba9401d31ec10d789177b1b24738  dreamapi-local-studio-v0.2.0.zip
+67717bcf67bf4e90266741dbb3dee63a752187dee24464584755f017e1bbf21e  dreamapi-local-studio-v0.2.0.zip

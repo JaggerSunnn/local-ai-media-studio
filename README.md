@@ -60,7 +60,7 @@ Use hosted mode only on infrastructure you trust because API requests pass throu
 ## Run locally
 
 ```bash
-git clone https://github.com/dreamfaceapp/dreamapi-local-studio.git
+git clone https://github.com/JaggerSunnn/dreamapi-local-studio.git
 cd dreamapi-local-studio
 npm start
 ```
