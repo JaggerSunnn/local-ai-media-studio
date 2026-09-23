@@ -5,9 +5,9 @@ services:
     plan: starter
     healthCheckPath: /api/health
     envVars:
-      - key: DREAMAPI_DEPLOYMENT_MODE
+      - key: LOCAL_STUDIO_DEPLOYMENT_MODE
         value: hosted
-      - key: DREAMAPI_BASE_URL
+      - key: LOCAL_STUDIO_BASE_URL
         value: https://api.newportai.com
       - key: MAX_TASK_CREDITS
         value: 1000

@@ -1,6 +1,6 @@
 {
   "name": "local-ai-media-studio",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Independent open-source local and PWA workspace for BYOK AI media generation.",
   "license": "MIT",
   "repository": {
@@ -10,7 +10,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "dev": "DREAMAPI_MOCK=true node server.mjs",
+    "dev": "LOCAL_STUDIO_MOCK=true node server.mjs",
     "check": "node --check server.mjs && node --check public/app.js && node tests/catalog.mjs && node tests/pwa.mjs",
     "test": "node tests/local-flow.mjs && node tests/hosted-isolation.mjs",
     "package": "node scripts/package.mjs"

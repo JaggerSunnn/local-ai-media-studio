@@ -11,7 +11,7 @@ For a zero-prerequisite commercial package, bundle the Node.js runtime in the re
 iPhone and iPad cannot run the Node.js adapter from a downloaded ZIP. Host the application over HTTPS and set:
 
 ```text
-DREAMAPI_DEPLOYMENT_MODE=hosted
+LOCAL_STUDIO_DEPLOYMENT_MODE=hosted
 HOST=0.0.0.0
 ```
 
@@ -22,7 +22,7 @@ After deployment, open the URL in Safari and use Share → Add to Home Screen.
 ```bash
 docker build -t local-ai-media-studio .
 docker run --rm -p 8788:8788 \
-  -e DREAMAPI_DEPLOYMENT_MODE=hosted \
+  -e LOCAL_STUDIO_DEPLOYMENT_MODE=hosted \
   -v local-ai-studio-data:/app/data \
   local-ai-media-studio
 ```

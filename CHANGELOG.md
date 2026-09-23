@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 — 2026-09-23
+
+- Renamed all public runtime configuration variables to the provider-neutral `LOCAL_STUDIO_*` namespace.
+- Updated Docker, Render, tests, documentation, and release packaging to use the neutral project identity.
+- Preserved all 42 mapped API capability entries and the compatible provider adapter.
+
 ## 0.2.1 — 2026-09-23
 
 - Rebranded the user-facing product as Local AI Media Studio.

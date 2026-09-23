@@ -19,12 +19,12 @@ jobs:
       - run: npm test
       - run: npm run package
       - name: Create ZIP
-        run: cd dist && zip -r ../local-ai-media-studio-${GITHUB_REF_NAME}.zip local-ai-media-studio
+        run: cd dist && zip -r ../local-ai-media-studio-offline-${GITHUB_REF_NAME}.zip local-ai-media-studio
       - name: Checksum
-        run: sha256sum local-ai-media-studio-${GITHUB_REF_NAME}.zip > SHA256SUMS.txt
+        run: sha256sum local-ai-media-studio-offline-${GITHUB_REF_NAME}.zip > SHA256SUMS-${GITHUB_REF_NAME}.txt
       - uses: softprops/action-gh-release@v2
         with:
           files: |
-            local-ai-media-studio-${{ github.ref_name }}.zip
-            SHA256SUMS.txt
+            local-ai-media-studio-offline-${{ github.ref_name }}.zip
+            SHA256SUMS-${{ github.ref_name }}.txt
           generate_release_notes: true

@@ -18,7 +18,7 @@ It supports two delivery modes:
 | Windows | Download the release ZIP and double-click `start.bat` | `data/uploads`, `data/outputs`, and `data/tasks.json` on the PC |
 | iPhone / iPad | Open a hosted HTTPS deployment in Safari and add it to the Home Screen | Download results to Photos or Files; the hosted service retains task metadata according to its deployment policy |
 | macOS | Download the release ZIP and double-click `start.command` | Local project data directory |
-| Developer / server | Run with Node.js or Docker | Configurable with `DREAMAPI_DATA_DIR` |
+| Developer / server | Run with Node.js or Docker | Configurable with `LOCAL_STUDIO_DATA_DIR` |
 
 The interface can open from a cached PWA shell, but generation requires an internet connection to the configured API provider. This repository does not run AI models locally.
 
@@ -80,7 +80,7 @@ npm run dev
 ```bash
 docker build -t local-ai-media-studio .
 docker run --rm -p 8788:8788 \
-  -e DREAMAPI_DEPLOYMENT_MODE=hosted \
+  -e LOCAL_STUDIO_DEPLOYMENT_MODE=hosted \
   local-ai-media-studio
 ```
 
@@ -92,12 +92,12 @@ Production hosting must provide HTTPS. For durable history and output retention,
 | --- | --- | --- |
 | `PORT` | `8788` | Local HTTP port |
 | `HOST` | `127.0.0.1` locally, `0.0.0.0` when hosted | Listening interface |
-| `DREAMAPI_BASE_URL` | `https://api.newportai.com` | Compatible provider base URL |
-| `DREAMAPI_DEPLOYMENT_MODE` | `local` | `local` or `hosted` behavior |
-| `DREAMAPI_DATA_DIR` | repository `data` directory | History, uploads, and outputs |
-| `DREAMAPI_MOCK` | `false` | Local mock generation for UI development |
+| `LOCAL_STUDIO_BASE_URL` | `https://api.newportai.com` | Compatible provider base URL |
+| `LOCAL_STUDIO_DEPLOYMENT_MODE` | `local` | `local` or `hosted` behavior |
+| `LOCAL_STUDIO_DATA_DIR` | repository `data` directory | History, uploads, and outputs |
+| `LOCAL_STUDIO_MOCK` | `false` | Local mock generation for UI development |
 | `MAX_TASK_CREDITS` | `1000` | Reject a task when a known estimate exceeds this limit |
-| `DREAMAPI_API_KEY` | empty | Development-only key injection; UI entry is preferred |
+| `LOCAL_STUDIO_API_KEY` | empty | Development-only key injection; UI entry is preferred |
 
 ## Architecture
 

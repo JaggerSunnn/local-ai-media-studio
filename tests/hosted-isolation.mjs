@@ -17,10 +17,10 @@ const fake = createServer(async (req, res) => {
 });
 await new Promise(resolve => fake.listen(0, '127.0.0.1', resolve));
 const fakePort = fake.address().port;
-const dataDir = await mkdtemp(join(tmpdir(), 'dreamapi-hosted-test-'));
+const dataDir = await mkdtemp(join(tmpdir(), 'local-studio-hosted-test-'));
 const appPort = 18879;
-const env = { ...process.env, DREAMAPI_BASE_URL: `http://127.0.0.1:${fakePort}`, DREAMAPI_DATA_DIR: dataDir, DREAMAPI_DEPLOYMENT_MODE: 'hosted', HOST: '127.0.0.1', PORT: String(appPort) };
-delete env.DREAMAPI_API_KEY;
+const env = { ...process.env, LOCAL_STUDIO_BASE_URL: `http://127.0.0.1:${fakePort}`, LOCAL_STUDIO_DATA_DIR: dataDir, LOCAL_STUDIO_DEPLOYMENT_MODE: 'hosted', HOST: '127.0.0.1', PORT: String(appPort) };
+delete env.LOCAL_STUDIO_API_KEY;
 const app = spawn(process.execPath, ['server.mjs'], { cwd: new URL('..', import.meta.url).pathname, env, stdio: 'ignore' });
 const base = `http://127.0.0.1:${appPort}`;
 const key = ['sk', 'hostedtest1234567890abcdef'].join('-');

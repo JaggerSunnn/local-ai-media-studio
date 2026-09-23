@@ -19,10 +19,10 @@ const fake=createServer(async(req,res)=>{
 });
 await new Promise(resolve=>fake.listen(0,'127.0.0.1',resolve));
 fakePort=fake.address().port;
-const dataDir=await mkdtemp(join(tmpdir(),'dreamapi-starter-test-'));
+const dataDir=await mkdtemp(join(tmpdir(),'local-studio-test-'));
 const appPort=18878;
-const env={...process.env,DREAMAPI_BASE_URL:`http://127.0.0.1:${fakePort}`,DREAMAPI_DATA_DIR:dataDir,PORT:String(appPort),DREAMAPI_MOCK:'false'};
-delete env.DREAMAPI_API_KEY;
+const env={...process.env,LOCAL_STUDIO_BASE_URL:`http://127.0.0.1:${fakePort}`,LOCAL_STUDIO_DATA_DIR:dataDir,PORT:String(appPort),LOCAL_STUDIO_MOCK:'false'};
+delete env.LOCAL_STUDIO_API_KEY;
 const app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url).pathname,env,stdio:'ignore'});
 const base=`http://127.0.0.1:${appPort}`;
 try{
