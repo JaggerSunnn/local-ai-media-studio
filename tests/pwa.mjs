@@ -17,6 +17,8 @@ assert.match(html, /data-experience="simple"/);
 assert.match(html, /data-experience="pro"/);
 assert.doesNotMatch(html, /DreamAPI|DreamFace|NewportAI/i, 'the product UI must not imply provider ownership or branding');
 assert.doesNotMatch(JSON.stringify(manifest), /DreamAPI|DreamFace|NewportAI/i, 'the installed PWA must use independent branding');
+assert.match(html, /fal\.ai/, 'the provider dialog should explain the fal adapter path');
+assert.match(html, /需要 fal API Key 与适配器/, 'the UI must not imply fal is already connected');
 
 const worker = await readFile(new URL('public/sw.js', root), 'utf8');
 assert.ok(worker.includes("pathname.startsWith('/api/')") && worker.includes("pathname.startsWith('/local/')"), 'API and private local responses must bypass the cache');

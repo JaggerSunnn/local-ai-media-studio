@@ -2,7 +2,7 @@
 
 ## Product modes
 
-Local AI Media Studio uses one UI and one compatible provider adapter in two modes.
+Local AI Media Studio uses one UI and a provider-adapter boundary in two modes. The current release ships with one compatible adapter; additional providers require separate credentials and an implementation of the same adapter contract.
 
 ### Local mode
 
@@ -32,6 +32,22 @@ Hosted isolation is an application boundary, not a complete SaaS identity system
 7. The UI polls the local task ID; the adapter polls the provider task ID.
 8. Local mode downloads successful outputs into `data/outputs`.
 9. The library displays output media and normalized metadata.
+
+## Multi-provider extension
+
+API credentials are provider-specific. A fal key cannot authenticate against Replicate or the currently configured compatible endpoint, and the inverse is also true. A future provider picker should therefore store one in-memory session credential per provider and show the provider's own billing context.
+
+Each provider adapter should implement these responsibilities:
+
+1. Validate its own credential without writing it to task history or browser storage.
+2. Declare supported Category → Task → Model mappings and safe defaults.
+3. Upload or reference input media using the provider's required format.
+4. Translate the normalized job into the provider's request schema.
+5. Poll synchronous or asynchronous jobs and normalize progress, failures, and results.
+6. Normalize price estimates and usage metadata without presenting estimates as final charges.
+7. Download outputs through the existing local storage boundary.
+
+The provider picker must label an adapter as available only after its authentication, submission, polling, and result paths have contract tests. A provider mentioned in product copy is not considered supported until those tests pass.
 
 ## Trust boundaries
 

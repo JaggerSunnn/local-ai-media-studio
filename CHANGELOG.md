@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3 — 2026-09-23
+
+- Added a provider-connection introduction for fal.ai, Replicate, and future adapters.
+- Clarified that every provider requires its own credential, billing account, and tested adapter.
+- Documented the multi-provider adapter responsibilities without claiming unimplemented integrations.
+
 ## 0.2.2 — 2026-09-23
 
 - Renamed all public runtime configuration variables to the provider-neutral `LOCAL_STUDIO_*` namespace.

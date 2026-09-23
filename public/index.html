@@ -63,7 +63,25 @@
     </div>
   </form>
 
-  <dialog id="keyDialog"><div class="dialog-head"><div><span class="kicker">CONNECT API PROVIDER</span><h2>连接你的 API Key</h2></div><button id="closeKey" type="button" aria-label="关闭">×</button></div><form id="keyForm" class="key-form"><p id="keyPrivacyText">Key 只发送到本机服务，并仅保存在当前 Node 进程内存中。</p><label><span>API Key</span><input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…" required></label><button class="dialog-primary" id="connectButton" type="submit">验证并连接</button><button class="dialog-secondary" id="disconnectButton" type="button" hidden>断开当前连接</button><p class="form-error" id="keyError" role="alert"></p></form></dialog>
+  <dialog id="keyDialog" class="provider-dialog">
+    <div class="dialog-head"><div><span class="kicker">CONNECT API PROVIDER</span><h2>连接你的 API Key</h2></div><button id="closeKey" type="button" aria-label="关闭">×</button></div>
+    <form id="keyForm" class="key-form">
+      <p id="keyPrivacyText">Key 只发送到本机服务，并仅保存在当前 Node 进程内存中。</p>
+      <section class="provider-intro" aria-labelledby="providerIntroTitle">
+        <div class="provider-intro-head"><strong id="providerIntroTitle">多平台连接</strong><span>Bring your own key</span></div>
+        <p>不同平台使用各自的 API Key 和计费账户。当前版本已经内置一个兼容适配器；其他平台需要安装对应适配器后才能调用。</p>
+        <div class="provider-grid">
+          <div class="provider-card active"><span class="provider-symbol">◆</span><span><strong>Compatible API</strong><small>当前可用 · 42 个接口能力</small></span><b>Ready</b></div>
+          <div class="provider-card"><span class="provider-symbol">F</span><span><strong>fal.ai</strong><small>需要 fal API Key 与适配器</small></span><b>Adapter</b></div>
+          <div class="provider-card"><span class="provider-symbol">R</span><span><strong>Replicate</strong><small>需要 Replicate Token 与适配器</small></span><b>Adapter</b></div>
+          <div class="provider-card"><span class="provider-symbol">＋</span><span><strong>More providers</strong><small>可扩展 OpenAI、Stability AI 等</small></span><b>Extend</b></div>
+        </div>
+        <small class="provider-note">平台名称仅用于说明兼容规划，不代表合作、赞助或当前已接入。</small>
+      </section>
+      <label><span>当前兼容平台 API Key</span><input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…" required></label>
+      <button class="dialog-primary" id="connectButton" type="submit">验证并连接</button><button class="dialog-secondary" id="disconnectButton" type="button" hidden>断开当前连接</button><p class="form-error" id="keyError" role="alert"></p>
+    </form>
+  </dialog>
   <dialog id="welcomeDialog" class="welcome-dialog"><div class="welcome-hero"><span class="welcome-logo">✦</span><span class="kicker">LOCAL AI STUDIO</span><h2>三步开始生成</h2><p>无需写代码。连接自己的 API Key，选择任务和模型，上传素材即可开始。</p></div><div class="welcome-steps"><div><b>1</b><strong>连接</strong><span>API Key 仅用于当前会话</span></div><div><b>2</b><strong>配置</strong><span>选择任务、模型和素材</span></div><div><b>3</b><strong>生成</strong><span>结果进入生成库</span></div></div><div class="welcome-actions"><button class="dialog-secondary" id="skipWelcome" type="button">先看看界面</button><button class="dialog-primary" id="startWelcome" type="button">连接并开始</button></div></dialog>
   <dialog id="installDialog" class="install-dialog"><div class="dialog-head"><div><span class="kicker">INSTALL LOCAL STUDIO</span><h2>安装到这台设备</h2></div><button id="closeInstall" type="button" aria-label="关闭">×</button></div><div class="install-content" id="installContent"></div></dialog>
   <dialog id="storageDialog" class="install-dialog"><div class="dialog-head"><div><span class="kicker">STORAGE &amp; HISTORY</span><h2>保存位置</h2></div><button id="closeStorage" type="button" aria-label="关闭">×</button></div><div class="install-content" id="storageContent"></div></dialog>

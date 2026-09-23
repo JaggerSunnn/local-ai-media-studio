@@ -59,6 +59,19 @@ Use hosted mode only on infrastructure you trust because API requests pass throu
 - Hosted session isolation so one browser identity cannot list or poll another browser's tasks.
 - No runtime npm dependencies.
 
+## Provider connections
+
+Local AI Media Studio is designed as a bring-your-own-key workspace. Each API platform has its own account, API key, billing balance, model identifiers, request schema, upload process, task status API, and result format. A key issued by one platform normally cannot be used with another platform.
+
+| Provider | Current status | What the user needs |
+| --- | --- | --- |
+| Compatible API adapter | Available; provides the 42 mapped capability entries in this release | A compatible API key |
+| fal.ai | Adapter planned; not callable from this release | A fal API key plus a fal adapter |
+| Replicate | Adapter planned; not callable from this release | A Replicate API token plus a Replicate adapter |
+| OpenAI / Stability AI / other providers | Extension path documented; not callable from this release | The provider's credential plus a provider-specific adapter and model catalog |
+
+Adding a provider does not require rebuilding the interface. The adapter must normalize authentication, uploads, submission, polling, errors, pricing metadata, and results into the local catalog contract. Provider names are used only to describe compatibility and do not imply affiliation, sponsorship, or endorsement.
+
 ## Run locally
 
 ```bash
