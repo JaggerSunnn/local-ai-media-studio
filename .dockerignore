@@ -1,0 +1,8 @@
+.git
+.github
+dist
+node_modules
+data/uploads
+data/outputs
+data/tasks.json
+*.zip

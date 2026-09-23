@@ -1,0 +1,19 @@
+{
+  "name": "dreamapi-local-studio",
+  "version": "0.2.0",
+  "description": "Open-source local and PWA workspace for DreamAPI generation and batch workflows.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dreamfaceapp/dreamapi-local-studio.git"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "DREAMAPI_MOCK=true node server.mjs",
+    "check": "node --check server.mjs && node --check public/app.js && node tests/catalog.mjs && node tests/pwa.mjs",
+    "test": "node tests/local-flow.mjs && node tests/hosted-isolation.mjs",
+    "package": "node scripts/package.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

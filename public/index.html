@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f0f10">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DreamAPI">
+  <title>DreamAPI Studio — Local AI Sandbox</title>
+  <meta name="description" content="在一个本地工作台中选择 DreamAPI 模型、上传素材、批量生成并保存结果。">
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/sandbox.css">
+  <link rel="stylesheet" href="/product.css">
+</head>
+<body>
+  <header class="appbar">
+    <a class="brand" href="/" aria-label="DreamAPI Studio 首页"><span class="brand-mark">D</span><strong>DreamAPI</strong><span class="brand-product">Sandbox</span></a>
+    <div class="appbar-center"><button class="nav-item active" type="button">Generate</button><button class="nav-item" id="libraryJump" type="button">Library <b id="taskCount">0</b></button></div>
+    <div class="appbar-actions">
+      <div class="experience-toggle" role="group" aria-label="使用模式"><button class="active" type="button" data-experience="simple">简洁</button><button type="button" data-experience="pro">专业</button></div>
+      <button class="soft-button install-button" id="installButton" type="button" hidden>安装应用</button>
+      <span class="connection"><i></i><span id="connectionLabel">检测连接</span></span><button class="soft-button" id="keyButton" type="button">连接 API Key</button>
+    </div>
+  </header>
+
+  <main class="canvas">
+    <section class="library" aria-labelledby="libraryTitle">
+      <div class="library-head">
+        <div><span class="kicker">DREAMAPI GENERATION STUDIO</span><h1 id="libraryTitle">Create anything.</h1><p id="libraryDescription">从任务到模型，再到素材与参数，在一个工作台完成批量生成。</p></div>
+        <div class="library-actions"><button class="local-badge" id="storageModeBadge" type="button"><i></i> 本地工作台</button><button class="icon-button" id="refreshLibrary" type="button" aria-label="刷新生成库" title="刷新生成库"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7"/></svg></button></div>
+      </div>
+      <div class="library-filter" id="libraryFilter" role="tablist" aria-label="筛选生成结果"><button class="active" type="button" data-filter="all">全部</button><button type="button" data-filter="video">Video</button><button type="button" data-filter="image">Image</button><button type="button" data-filter="audio">Audio</button><button type="button" data-filter="avatar">Avatar</button></div>
+      <div class="library-grid" id="libraryGrid" aria-live="polite"></div>
+      <div class="empty-library" id="emptyLibrary"><div class="empty-orbit"><span>✦</span></div><h2>Your generations will appear here</h2><p>在下方输入创意，选择类型和模型，然后开始生成。</p></div>
+      <div class="canvas-spacer" aria-hidden="true"></div>
+    </section>
+  </main>
+
+  <form class="composer-dock" id="generatorForm">
+    <div class="composer-shell">
+      <section class="settings-panel" id="settingsPanel" hidden>
+        <div class="panel-head"><div><strong>Generation settings</strong><span id="settingsModelLabel">按主模型配置</span></div><button class="icon-button" id="closeSettings" type="button" aria-label="关闭设置">×</button></div>
+        <div class="asset-grid" id="assetFields"></div><div class="text-grid" id="textFields"></div><div class="option-grid" id="optionFields"></div>
+        <div class="settings-foot"><label class="batch-field pro-setting">每个模型生成 <input id="batchCount" type="number" min="1" max="10" value="1"> 次</label><label class="profile-field">内容分级 <select id="profileSelect"><option value="standard">标准内容</option><option value="mature-audience">成年受众</option></select></label><label class="adult-confirm" id="adultConfirm"><input type="checkbox" id="adultCheckbox"> 我确认使用者已成年，并遵守授权及适用法律。</label></div>
+      </section>
+
+      <section class="model-popover" id="modelPopover" hidden>
+        <div class="panel-head"><div><strong>Choose models</strong><span id="modelPickerHint">选择一个模型；专业模式支持多模型对比</span></div><button class="text-button pro-setting" id="clearModels" type="button">清除</button></div>
+        <div class="model-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="modelSearch" type="search" placeholder="搜索模型"></div><div class="model-list" id="modelList"></div>
+      </section>
+
+      <div class="composer-context">
+        <div class="category-tabs" id="categoryTabs"><button class="active" type="button" data-category="video"><span>▶</span>Video</button><button type="button" data-category="image"><span>▧</span>Image</button><button type="button" data-category="audio"><span>♫</span>Audio</button><button type="button" data-category="avatar"><span>◉</span>Avatar</button></div>
+        <div class="context-selectors"><label class="compact-select"><span>Task</span><select id="operationSelect"></select></label><button class="model-trigger" id="modelTrigger" type="button"><span class="model-stack">◆</span><span><small>Models</small><strong id="modelTriggerLabel">选择模型</strong></span><b id="selectedModelCount">0</b></button></div>
+      </div>
+
+      <div class="asset-chips" id="assetChips"></div>
+      <div class="prompt-row"><textarea id="promptInput" rows="2" maxlength="4000" placeholder="Describe what you want to create…"></textarea><button class="run-button" id="submitButton" type="submit"><span>Run</span><kbd>⌘↵</kbd></button></div>
+      <div class="composer-toolbar"><div class="toolbar-left"><button class="tool-button" id="quickUpload" type="button"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>素材</span></button><button class="tool-button" id="settingsButton" type="button"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6"/></svg><span>参数</span></button><span class="toolbar-summary" id="configSummary">480p · 5s</span></div><div class="toolbar-right"><span id="estimateCredits">预计用量待确认</span><span class="divider"></span><span id="promptCount">0 / 4000</span></div></div>
+    </div>
+  </form>
+
+  <dialog id="keyDialog"><div class="dialog-head"><div><span class="kicker">CONNECT DREAMAPI</span><h2>连接你的 API Key</h2></div><button id="closeKey" type="button" aria-label="关闭">×</button></div><form id="keyForm" class="key-form"><p id="keyPrivacyText">Key 只发送到本机服务，并仅保存在当前 Node 进程内存中。</p><label><span>DreamAPI Key</span><input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…" required></label><button class="dialog-primary" id="connectButton" type="submit">验证并连接</button><button class="dialog-secondary" id="disconnectButton" type="button" hidden>断开当前连接</button><p class="form-error" id="keyError" role="alert"></p></form></dialog>
+  <dialog id="welcomeDialog" class="welcome-dialog"><div class="welcome-hero"><span class="welcome-logo">D</span><span class="kicker">DREAMAPI LOCAL STUDIO</span><h2>三步开始生成</h2><p>无需写代码。连接自己的 API Key，选择任务和模型，上传素材即可开始。</p></div><div class="welcome-steps"><div><b>1</b><strong>连接</strong><span>API Key 仅用于当前会话</span></div><div><b>2</b><strong>配置</strong><span>选择任务、模型和素材</span></div><div><b>3</b><strong>生成</strong><span>结果进入生成库</span></div></div><div class="welcome-actions"><button class="dialog-secondary" id="skipWelcome" type="button">先看看界面</button><button class="dialog-primary" id="startWelcome" type="button">连接并开始</button></div></dialog>
+  <dialog id="installDialog" class="install-dialog"><div class="dialog-head"><div><span class="kicker">INSTALL DREAMAPI</span><h2>安装到这台设备</h2></div><button id="closeInstall" type="button" aria-label="关闭">×</button></div><div class="install-content" id="installContent"></div></dialog>
+  <dialog id="storageDialog" class="install-dialog"><div class="dialog-head"><div><span class="kicker">STORAGE &amp; HISTORY</span><h2>保存位置</h2></div><button id="closeStorage" type="button" aria-label="关闭">×</button></div><div class="install-content" id="storageContent"></div></dialog>
+  <dialog id="detailDialog" class="detail-dialog"><button class="detail-close" id="closeDetail" type="button" aria-label="关闭">×</button><div id="detailContent"></div></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>

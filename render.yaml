@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: dreamapi-local-studio
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/health
+    envVars:
+      - key: DREAMAPI_DEPLOYMENT_MODE
+        value: hosted
+      - key: DREAMAPI_BASE_URL
+        value: https://api.newportai.com
+      - key: MAX_TASK_CREDITS
+        value: 1000

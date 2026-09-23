@@ -1,0 +1,33 @@
+name: Model request or contract update
+description: Propose a DreamAPI model, task, or parameter change.
+title: "[Model]: "
+labels: [model]
+body:
+  - type: input
+    id: model
+    attributes:
+      label: Model and task
+    validations:
+      required: true
+  - type: input
+    id: docs
+    attributes:
+      label: Official DreamAPI documentation URL
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Contract change
+      description: Describe fields, valid values, defaults, and output type. Do not include an API key.
+    validations:
+      required: true
+  - type: checkboxes
+    id: verification
+    attributes:
+      label: Verification
+      options:
+        - label: I removed credentials and private media.
+          required: true
+        - label: I state clearly whether a real paid request was tested.
+          required: true

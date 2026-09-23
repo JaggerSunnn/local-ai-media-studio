@@ -1,0 +1,15 @@
+{
+  "name": "DreamAPI Local Studio",
+  "short_name": "DreamAPI",
+  "description": "Choose DreamAPI models, upload media, run batches, and manage generated results.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f6f3",
+  "theme_color": "#0f0f10",
+  "icons": [
+    {"src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
