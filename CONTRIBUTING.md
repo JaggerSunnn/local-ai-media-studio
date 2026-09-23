@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for improving DreamAPI Local Studio.
+Thank you for improving Local AI Media Studio.
 
 ## Development
 
@@ -16,7 +16,7 @@ No third-party npm packages are required by the runtime.
 Update `catalog.mjs` and include:
 
 - a unique model ID and user-facing name;
-- the DreamAPI endpoint;
+- the compatible provider endpoint;
 - output kind;
 - required and optional inputs;
 - API field mappings;

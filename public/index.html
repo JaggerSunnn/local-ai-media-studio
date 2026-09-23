@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#0f0f10">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="DreamAPI">
-  <title>DreamAPI Studio — Local AI Sandbox</title>
-  <meta name="description" content="在一个本地工作台中选择 DreamAPI 模型、上传素材、批量生成并保存结果。">
+  <meta name="apple-mobile-web-app-title" content="Local Studio">
+  <title>Local AI Studio — Media Sandbox</title>
+  <meta name="description" content="在一个独立的本地工作台中选择模型、上传素材、批量生成并保存结果。">
   <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <link rel="manifest" href="/manifest.webmanifest">
@@ -17,7 +17,7 @@
 </head>
 <body>
   <header class="appbar">
-    <a class="brand" href="/" aria-label="DreamAPI Studio 首页"><span class="brand-mark">D</span><strong>DreamAPI</strong><span class="brand-product">Sandbox</span></a>
+    <a class="brand" href="/" aria-label="Local AI Studio 首页"><span class="brand-mark">✦</span><strong>Local Studio</strong><span class="brand-product">Media Lab</span></a>
     <div class="appbar-center"><button class="nav-item active" type="button">Generate</button><button class="nav-item" id="libraryJump" type="button">Library <b id="taskCount">0</b></button></div>
     <div class="appbar-actions">
       <div class="experience-toggle" role="group" aria-label="使用模式"><button class="active" type="button" data-experience="simple">简洁</button><button type="button" data-experience="pro">专业</button></div>
@@ -29,7 +29,7 @@
   <main class="canvas">
     <section class="library" aria-labelledby="libraryTitle">
       <div class="library-head">
-        <div><span class="kicker">DREAMAPI GENERATION STUDIO</span><h1 id="libraryTitle">Create anything.</h1><p id="libraryDescription">从任务到模型，再到素材与参数，在一个工作台完成批量生成。</p></div>
+        <div><span class="kicker">LOCAL AI GENERATION STUDIO</span><h1 id="libraryTitle">Create anything.</h1><p id="libraryDescription">从任务到模型，再到素材与参数，在一个独立工作台完成批量生成。</p></div>
         <div class="library-actions"><button class="local-badge" id="storageModeBadge" type="button"><i></i> 本地工作台</button><button class="icon-button" id="refreshLibrary" type="button" aria-label="刷新生成库" title="刷新生成库"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7"/></svg></button></div>
       </div>
       <div class="library-filter" id="libraryFilter" role="tablist" aria-label="筛选生成结果"><button class="active" type="button" data-filter="all">全部</button><button type="button" data-filter="video">Video</button><button type="button" data-filter="image">Image</button><button type="button" data-filter="audio">Audio</button><button type="button" data-filter="avatar">Avatar</button></div>
@@ -63,9 +63,9 @@
     </div>
   </form>
 
-  <dialog id="keyDialog"><div class="dialog-head"><div><span class="kicker">CONNECT DREAMAPI</span><h2>连接你的 API Key</h2></div><button id="closeKey" type="button" aria-label="关闭">×</button></div><form id="keyForm" class="key-form"><p id="keyPrivacyText">Key 只发送到本机服务，并仅保存在当前 Node 进程内存中。</p><label><span>DreamAPI Key</span><input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…" required></label><button class="dialog-primary" id="connectButton" type="submit">验证并连接</button><button class="dialog-secondary" id="disconnectButton" type="button" hidden>断开当前连接</button><p class="form-error" id="keyError" role="alert"></p></form></dialog>
-  <dialog id="welcomeDialog" class="welcome-dialog"><div class="welcome-hero"><span class="welcome-logo">D</span><span class="kicker">DREAMAPI LOCAL STUDIO</span><h2>三步开始生成</h2><p>无需写代码。连接自己的 API Key，选择任务和模型，上传素材即可开始。</p></div><div class="welcome-steps"><div><b>1</b><strong>连接</strong><span>API Key 仅用于当前会话</span></div><div><b>2</b><strong>配置</strong><span>选择任务、模型和素材</span></div><div><b>3</b><strong>生成</strong><span>结果进入生成库</span></div></div><div class="welcome-actions"><button class="dialog-secondary" id="skipWelcome" type="button">先看看界面</button><button class="dialog-primary" id="startWelcome" type="button">连接并开始</button></div></dialog>
-  <dialog id="installDialog" class="install-dialog"><div class="dialog-head"><div><span class="kicker">INSTALL DREAMAPI</span><h2>安装到这台设备</h2></div><button id="closeInstall" type="button" aria-label="关闭">×</button></div><div class="install-content" id="installContent"></div></dialog>
+  <dialog id="keyDialog"><div class="dialog-head"><div><span class="kicker">CONNECT API PROVIDER</span><h2>连接你的 API Key</h2></div><button id="closeKey" type="button" aria-label="关闭">×</button></div><form id="keyForm" class="key-form"><p id="keyPrivacyText">Key 只发送到本机服务，并仅保存在当前 Node 进程内存中。</p><label><span>API Key</span><input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…" required></label><button class="dialog-primary" id="connectButton" type="submit">验证并连接</button><button class="dialog-secondary" id="disconnectButton" type="button" hidden>断开当前连接</button><p class="form-error" id="keyError" role="alert"></p></form></dialog>
+  <dialog id="welcomeDialog" class="welcome-dialog"><div class="welcome-hero"><span class="welcome-logo">✦</span><span class="kicker">LOCAL AI STUDIO</span><h2>三步开始生成</h2><p>无需写代码。连接自己的 API Key，选择任务和模型，上传素材即可开始。</p></div><div class="welcome-steps"><div><b>1</b><strong>连接</strong><span>API Key 仅用于当前会话</span></div><div><b>2</b><strong>配置</strong><span>选择任务、模型和素材</span></div><div><b>3</b><strong>生成</strong><span>结果进入生成库</span></div></div><div class="welcome-actions"><button class="dialog-secondary" id="skipWelcome" type="button">先看看界面</button><button class="dialog-primary" id="startWelcome" type="button">连接并开始</button></div></dialog>
+  <dialog id="installDialog" class="install-dialog"><div class="dialog-head"><div><span class="kicker">INSTALL LOCAL STUDIO</span><h2>安装到这台设备</h2></div><button id="closeInstall" type="button" aria-label="关闭">×</button></div><div class="install-content" id="installContent"></div></dialog>
   <dialog id="storageDialog" class="install-dialog"><div class="dialog-head"><div><span class="kicker">STORAGE &amp; HISTORY</span><h2>保存位置</h2></div><button id="closeStorage" type="button" aria-label="关闭">×</button></div><div class="install-content" id="storageContent"></div></dialog>
   <dialog id="detailDialog" class="detail-dialog"><button class="detail-close" id="closeDetail" type="button" aria-label="关闭">×</button><div id="detailContent"></div></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>

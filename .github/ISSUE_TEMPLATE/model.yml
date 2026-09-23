@@ -1,5 +1,5 @@
 name: Model request or contract update
-description: Propose a DreamAPI model, task, or parameter change.
+description: Propose a compatible API model, task, or parameter change.
 title: "[Model]: "
 labels: [model]
 body:
@@ -12,7 +12,7 @@ body:
   - type: input
     id: docs
     attributes:
-      label: Official DreamAPI documentation URL
+      label: Provider documentation URL
     validations:
       required: true
   - type: textarea

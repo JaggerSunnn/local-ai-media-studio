@@ -2,7 +2,7 @@ import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const root = new URL('..', import.meta.url).pathname;
-const output = join(root, 'dist', 'dreamapi-local-studio');
+const output = join(root, 'dist', 'local-ai-media-studio');
 await rm(join(root, 'dist'), { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 

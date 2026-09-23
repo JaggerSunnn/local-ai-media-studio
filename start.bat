@@ -6,6 +6,6 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-start "DreamAPI Starter Kit" cmd /k node server.mjs
+start "Local AI Studio" cmd /k node server.mjs
 timeout /t 2 >nul
 start "" "http://127.0.0.1:8788/"

@@ -20,11 +20,11 @@ After deployment, open the URL in Safari and use Share → Add to Home Screen.
 ### Docker
 
 ```bash
-docker build -t dreamapi-local-studio .
+docker build -t local-ai-media-studio .
 docker run --rm -p 8788:8788 \
   -e DREAMAPI_DEPLOYMENT_MODE=hosted \
-  -v dreamapi-data:/app/data \
-  dreamapi-local-studio
+  -v local-ai-studio-data:/app/data \
+  local-ai-media-studio
 ```
 
 Terminate TLS at a trusted reverse proxy. Forward the original protocol in `X-Forwarded-Proto` so cookies receive the Secure attribute.

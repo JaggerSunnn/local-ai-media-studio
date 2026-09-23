@@ -27,7 +27,7 @@ const key = ['sk', 'hostedtest1234567890abcdef'].join('-');
 
 function cookieValues(...headers) {
   const values = new Map();
-  for (const header of headers) for (const match of String(header || '').matchAll(/(?:^|,\s*)(dreamapi_(?:client|session))=([a-f0-9]{64})/g)) values.set(match[1], match[2]);
+  for (const header of headers) for (const match of String(header || '').matchAll(/(?:^|,\s*)(localstudio_(?:client|session))=([a-f0-9]{64})/g)) values.set(match[1], match[2]);
   return [...values].map(([name, value]) => `${name}=${value}`).join('; ');
 }
 

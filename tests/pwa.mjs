@@ -15,6 +15,8 @@ assert.match(html, /apple-mobile-web-app-capable/);
 assert.match(html, /viewport-fit=cover/);
 assert.match(html, /data-experience="simple"/);
 assert.match(html, /data-experience="pro"/);
+assert.doesNotMatch(html, /DreamAPI|DreamFace|NewportAI/i, 'the product UI must not imply provider ownership or branding');
+assert.doesNotMatch(JSON.stringify(manifest), /DreamAPI|DreamFace|NewportAI/i, 'the installed PWA must use independent branding');
 
 const worker = await readFile(new URL('public/sw.js', root), 'utf8');
 assert.ok(worker.includes("pathname.startsWith('/api/')") && worker.includes("pathname.startsWith('/local/')"), 'API and private local responses must bypass the cache');

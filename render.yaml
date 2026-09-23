@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: dreamapi-local-studio
+    name: local-ai-media-studio
     runtime: docker
     plan: starter
     healthCheckPath: /api/health

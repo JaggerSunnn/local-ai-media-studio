@@ -10,7 +10,7 @@ Each model definition includes:
 | `group` | Provider or capability group |
 | `label` | Display name |
 | `short` | Short user explanation |
-| `endpoint` | DreamAPI submit endpoint |
+| `endpoint` | Compatible provider submit endpoint |
 | `outputKind` | `image`, `video`, `audio`, or `data` |
 | `inputs` | Prompt and media requirements |
 | `options` | Resolution, duration, ratio, quality, seed, and other controls |

@@ -2,7 +2,7 @@
 
 ## Product modes
 
-DreamAPI Local Studio uses one UI and one API adapter in two modes.
+Local AI Media Studio uses one UI and one compatible provider adapter in two modes.
 
 ### Local mode
 
@@ -27,9 +27,9 @@ Hosted isolation is an application boundary, not a complete SaaS identity system
 2. The user selects Category → Task → Model.
 3. The UI renders inputs and options from the model definition.
 4. Media is uploaded to `/api/assets` and written to the configured data directory.
-5. The adapter obtains a DreamAPI upload policy and uploads the media.
+5. The adapter obtains the configured provider's upload policy and uploads the media.
 6. The adapter validates and submits a normalized provider request.
-7. The UI polls the local task ID; the adapter polls the DreamAPI provider task ID.
+7. The UI polls the local task ID; the adapter polls the provider task ID.
 8. Local mode downloads successful outputs into `data/outputs`.
 9. The library displays output media and normalized metadata.
 

@@ -1,1 +1,1 @@
-67717bcf67bf4e90266741dbb3dee63a752187dee24464584755f017e1bbf21e  dreamapi-local-studio-v0.2.0.zip
+ace40a3a26b6306e2ee84d7f57191e584b31c2b171eb08459b6b2a9f7d170148  local-ai-media-studio-v0.2.1.zip

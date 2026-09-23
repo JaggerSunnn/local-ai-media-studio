@@ -1,10 +1,12 @@
-# DreamAPI Local Studio
+# Local AI Media Studio
 
 > Build more, spend less, switch faster.
 
-An open-source generation workspace for [DreamAPI](https://api.newportai.com/). Choose a task, compare compatible models, upload media, run batches, and manage results from one responsive interface.
+An independent open-source generation workspace. Choose a task, compare compatible models, upload media, run batches, and manage results from one responsive interface.
 
-DreamAPI Local Studio serves two audiences from the same codebase:
+> **Independent project:** This repository is maintained by its open-source contributors. It is not an official product of, published by, sponsored by, or affiliated with DreamAPI, DreamFace, or NewportAI. Users connect their own API credentials to compatible provider endpoints.
+
+Local AI Media Studio serves two audiences from the same codebase:
 
 - **Simple mode** guides creators through one task and one model at a time.
 - **Pro mode** adds multi-model comparison, repeated runs, batch files, cost estimates, and concurrent task submission.
@@ -18,7 +20,7 @@ It supports two delivery modes:
 | macOS | Download the release ZIP and double-click `start.command` | Local project data directory |
 | Developer / server | Run with Node.js or Docker | Configurable with `DREAMAPI_DATA_DIR` |
 
-The interface can open from a cached PWA shell, but generation always requires an internet connection to DreamAPI. This repository does not run AI models locally.
+The interface can open from a cached PWA shell, but generation requires an internet connection to the configured API provider. This repository does not run AI models locally.
 
 ## Quick start for Windows
 
@@ -26,7 +28,7 @@ The interface can open from a cached PWA shell, but generation always requires a
 2. Install [Node.js 20+](https://nodejs.org/) once if it is not already installed.
 3. Double-click `start.bat`.
 4. Open `http://127.0.0.1:8788/` if the browser does not open automatically.
-5. Select **Connect API Key**, enter your own DreamAPI key, and start generating.
+5. Select **Connect API Key**, enter your own compatible key, and start generating.
 
 The key stays in the local Node.js process memory and is not written to task history or browser storage.
 
@@ -37,7 +39,7 @@ iOS cannot run the included Node.js local service. Deploy the repository to an H
 1. Open the deployment URL in Safari.
 2. Tap **Share**.
 3. Tap **Add to Home Screen**.
-4. Open DreamAPI from the new Home Screen icon.
+4. Open Local Studio from the new Home Screen icon.
 5. Connect an API key for the current session.
 
 Use hosted mode only on infrastructure you trust because API requests pass through that service. GitHub Pages alone cannot run the API adapter in this repository. See [Hosted PWA deployment](docs/DEPLOYMENT.md).
@@ -46,7 +48,7 @@ Use hosted mode only on infrastructure you trust because API requests pass throu
 
 - Video, image, audio, and avatar generation categories.
 - Task-first filtering followed by compatible model selection.
-- 42 mapped DreamAPI capability entries in `catalog.mjs`.
+- 42 mapped API capability entries in `catalog.mjs`.
 - Dynamic forms for required media, prompts, dimensions, durations, ratios, seeds, and model-specific options.
 - Multi-file, multi-model, and repeated-run batches with a ten-task safety limit.
 - Two concurrent submissions, independent status polling, failure reporting, and local result downloads.
@@ -60,8 +62,8 @@ Use hosted mode only on infrastructure you trust because API requests pass throu
 ## Run locally
 
 ```bash
-git clone https://github.com/JaggerSunnn/dreamapi-local-studio.git
-cd dreamapi-local-studio
+git clone https://github.com/JaggerSunnn/local-ai-media-studio.git
+cd local-ai-media-studio
 npm start
 ```
 
@@ -76,10 +78,10 @@ npm run dev
 ## Hosted PWA
 
 ```bash
-docker build -t dreamapi-local-studio .
+docker build -t local-ai-media-studio .
 docker run --rm -p 8788:8788 \
   -e DREAMAPI_DEPLOYMENT_MODE=hosted \
-  dreamapi-local-studio
+  local-ai-media-studio
 ```
 
 Production hosting must provide HTTPS. For durable history and output retention, mount the `data` directory to persistent storage. Review [Deployment](docs/DEPLOYMENT.md) before making a public service available.
@@ -90,7 +92,7 @@ Production hosting must provide HTTPS. For durable history and output retention,
 | --- | --- | --- |
 | `PORT` | `8788` | Local HTTP port |
 | `HOST` | `127.0.0.1` locally, `0.0.0.0` when hosted | Listening interface |
-| `DREAMAPI_BASE_URL` | `https://api.newportai.com` | DreamAPI base URL |
+| `DREAMAPI_BASE_URL` | `https://api.newportai.com` | Compatible provider base URL |
 | `DREAMAPI_DEPLOYMENT_MODE` | `local` | `local` or `hosted` behavior |
 | `DREAMAPI_DATA_DIR` | repository `data` directory | History, uploads, and outputs |
 | `DREAMAPI_MOCK` | `false` | Local mock generation for UI development |
@@ -104,7 +106,7 @@ flowchart LR
     UI[Responsive web / PWA UI] --> LOCAL[Local or hosted Node adapter]
     LOCAL --> CATALOG[Model catalog and validation]
     LOCAL --> QUEUE[Batch submission and polling]
-    LOCAL --> API[DreamAPI]
+    LOCAL --> API[Configured API provider]
     LOCAL --> FILES[Uploads, history, outputs]
     SW[Service worker] --> UI
 ```
@@ -115,7 +117,7 @@ The browser never calls provider endpoints directly. The Node adapter normalizes
 
 Models are defined in `catalog.mjs`. Each entry declares its endpoint, fields, mappings, options, defaults, content profiles, pricing metadata, and output type. The UI renders the form from this catalog.
 
-The current entries were mapped from available DreamAPI contracts, but not every paid endpoint has been re-tested for this release. Run contract checks with a controlled test account before claiming full production support. See [Model catalog guide](docs/MODEL_CATALOG.md).
+The default adapter currently targets the compatible API at `api.newportai.com`. Its entries were mapped from available contracts, but not every paid endpoint has been re-tested for this release. Run contract checks with a controlled test account before claiming full production support. See [Model catalog guide](docs/MODEL_CATALOG.md).
 
 ## Validation
 
@@ -146,4 +148,4 @@ The checks cover catalog integrity, PWA assets, local API-key non-persistence, b
 
 ## License
 
-[MIT](LICENSE). DreamAPI and DreamFace names and marks are not licensed for unrelated branding or endorsement.
+[MIT](LICENSE). Third-party provider names and marks belong to their respective owners. Their presence in compatibility metadata does not indicate sponsorship, affiliation, or endorsement.

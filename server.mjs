@@ -75,7 +75,7 @@ function estimate(model, options={}) {
 async function dreamPost(path, body, key) {
   const response=await fetch(`${BASE_URL}${path}`,{method:'POST',headers:{'content-type':'application/json','authorization':`Bearer ${key}`},body:JSON.stringify(body),signal:AbortSignal.timeout(30_000)});
   const data=await response.json().catch(()=>({code:-1,message:`HTTP ${response.status}`}));
-  if(!response.ok || data.code!==0) throw Object.assign(new Error(data.message || 'DreamAPI 请求失败'),{providerCode:data.code,httpStatus:response.status});
+  if(!response.ok || data.code!==0) throw Object.assign(new Error(data.message || 'API 服务请求失败'),{providerCode:data.code,httpStatus:response.status});
   return data.data || {};
 }
 
@@ -86,7 +86,7 @@ async function resolveAsset(value, key) {
   if(asset.providerUrl) return asset.providerUrl;
   const policy=await dreamPost('/api/file/v1/get_policy',{scene:'Dream-CN'},key);
   const host=policy.host; const accessId=policy.OSSAccessKeyId || policy.accessId; const uploadKey=policy.key || `${policy.dir || ''}${asset.name}`;
-  if(!host || !accessId || !uploadKey || !policy.policy || !policy.signature) throw new Error('上传协议返回不完整，请检查当前 DreamAPI Storage 契约');
+  if(!host || !accessId || !uploadKey || !policy.policy || !policy.signature) throw new Error('上传协议返回不完整，请检查当前 API Storage 契约');
   const bytes=await readFile(asset.path); const form=new FormData();
   form.set('key',uploadKey); form.set('policy',policy.policy); form.set('OSSAccessKeyId',accessId); form.set('signature',policy.signature);
   if(policy.callback) form.set('callback',policy.callback); form.set('success_action_status','200'); form.set('file',new Blob([bytes],{type:asset.type}),asset.name);
@@ -154,16 +154,16 @@ async function refreshTask(task, key) {
   return task;
 }
 
-function sessionFor(req){const cookie=req.headers.cookie?.match(/(?:^|;\s*)dreamapi_session=([a-f0-9]{64})(?:;|$)/);const session=cookie?sessions.get(cookie[1]):null;if(session&&Date.now()-session.createdAt>8*60*60*1000){sessions.delete(cookie[1]);return null}return session;}
+function sessionFor(req){const cookie=req.headers.cookie?.match(/(?:^|;\s*)localstudio_session=([a-f0-9]{64})(?:;|$)/);const session=cookie?sessions.get(cookie[1]):null;if(session&&Date.now()-session.createdAt>8*60*60*1000){sessions.delete(cookie[1]);return null}return session;}
 function keyFor(req){return sessionFor(req)?.key || ENV_KEY;}
 function sameOrigin(req){const origin=req.headers.origin;if(!origin)return true;try{return new URL(origin).host===req.headers.host;}catch{return false;}}
 function cookieOptions(req){const secure=DEPLOYMENT_MODE==='hosted'&&(req.headers['x-forwarded-proto']==='https'||req.socket.encrypted);return `HttpOnly; SameSite=Strict; Path=/${secure?'; Secure':''}`;}
 function ownerFor(req,res){
   if(DEPLOYMENT_MODE==='local')return 'local';
-  const found=req.headers.cookie?.match(/(?:^|;\s*)dreamapi_client=([a-f0-9]{64})(?:;|$)/)?.[1];
+  const found=req.headers.cookie?.match(/(?:^|;\s*)localstudio_client=([a-f0-9]{64})(?:;|$)/)?.[1];
   if(found)return found;
   const owner=randomUUID().replaceAll('-','')+randomUUID().replaceAll('-','');
-  res.appendHeader('set-cookie',`dreamapi_client=${owner}; ${cookieOptions(req)}; Max-Age=31536000`);
+  res.appendHeader('set-cookie',`localstudio_client=${owner}; ${cookieOptions(req)}; Max-Age=31536000`);
   return owner;
 }
 function taskForOwner(id,ownerId){const task=tasks.get(id);return task&&(DEPLOYMENT_MODE==='local'||task.ownerId===ownerId)?task:null;}
@@ -180,15 +180,15 @@ async function handleApi(req,res,url){
   if(req.method==='GET'&&url.pathname==='/api/health') return json(res,200,{ok:true,mode:MOCK?'mock':keyFor(req)?'live':'disconnected',deploymentMode:DEPLOYMENT_MODE,keyConfigured:Boolean(keyFor(req)),authSource:sessionFor(req)?'session':ENV_KEY?'environment':null});
   if(req.method==='POST'&&url.pathname==='/api/session'){
     const body=await readJson(req);const key=String(body.apiKey||'').trim();
-    if(!/^sk-[A-Za-z0-9_-]{16,}$/.test(key))return json(res,422,{error:'请输入有效格式的 DreamAPI Key'});
+    if(!/^sk-[A-Za-z0-9_-]{16,}$/.test(key))return json(res,422,{error:'请输入有效格式的 API Key'});
     const credits=await verifyKey(key);const token=randomUUID().replaceAll('-','')+randomUUID().replaceAll('-','');
     sessions.set(token,{key,createdAt:Date.now()});
-    res.appendHeader('set-cookie',`dreamapi_session=${token}; ${cookieOptions(req)}; Max-Age=28800`);
+    res.appendHeader('set-cookie',`localstudio_session=${token}; ${cookieOptions(req)}; Max-Age=28800`);
     return json(res,200,{connected:true,credits});
   }
   if(req.method==='DELETE'&&url.pathname==='/api/session'){
-    const cookie=req.headers.cookie?.match(/(?:^|;\s*)dreamapi_session=([a-f0-9]{64})(?:;|$)/);if(cookie)sessions.delete(cookie[1]);
-    res.appendHeader('set-cookie',`dreamapi_session=; ${cookieOptions(req)}; Max-Age=0`);return json(res,200,{connected:false});
+    const cookie=req.headers.cookie?.match(/(?:^|;\s*)localstudio_session=([a-f0-9]{64})(?:;|$)/);if(cookie)sessions.delete(cookie[1]);
+    res.appendHeader('set-cookie',`localstudio_session=; ${cookieOptions(req)}; Max-Age=0`);return json(res,200,{connected:false});
   }
   const key=keyFor(req);
   const taskMatch=url.pathname.match(/^\/api\/tasks\/([a-f0-9-]+)$/i);
@@ -240,4 +240,4 @@ const server=http.createServer(async(req,res)=>{
     const info=await stat(path); if(info.isDirectory())return json(res,404,{error:'Not found'}); res.writeHead(200,{'content-type':types[extname(path)]||'application/octet-stream'});createReadStream(path).pipe(res);
   }catch(error){json(res,error.status||500,{error:error.message||'服务器错误'});}
 });
-server.listen(PORT,HOST,()=>console.log(`DreamAPI Studio (${DEPLOYMENT_MODE}, ${MOCK?'mock':ENV_KEY?'live':'disconnected'}) http://${HOST==='0.0.0.0'?'127.0.0.1':HOST}:${PORT}`));
+server.listen(PORT,HOST,()=>console.log(`Local AI Studio (${DEPLOYMENT_MODE}, ${MOCK?'mock':ENV_KEY?'live':'disconnected'}) http://${HOST==='0.0.0.0'?'127.0.0.1':HOST}:${PORT}`));

@@ -1,11 +1,11 @@
 {
-  "name": "dreamapi-local-studio",
-  "version": "0.2.0",
-  "description": "Open-source local and PWA workspace for DreamAPI generation and batch workflows.",
+  "name": "local-ai-media-studio",
+  "version": "0.2.1",
+  "description": "Independent open-source local and PWA workspace for BYOK AI media generation.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/JaggerSunnn/dreamapi-local-studio.git"
+    "url": "https://github.com/JaggerSunnn/local-ai-media-studio.git"
   },
   "type": "module",
   "scripts": {

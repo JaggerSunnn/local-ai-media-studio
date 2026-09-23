@@ -1,7 +1,7 @@
 {
-  "name": "DreamAPI Local Studio",
-  "short_name": "DreamAPI",
-  "description": "Choose DreamAPI models, upload media, run batches, and manage generated results.",
+  "name": "Local AI Media Studio",
+  "short_name": "Local Studio",
+  "description": "Choose AI media models, upload inputs, run batches, and manage generated results.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
