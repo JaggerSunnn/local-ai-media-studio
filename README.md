@@ -52,7 +52,8 @@ Use hosted mode only on infrastructure you trust because API requests pass throu
 - Dynamic forms for required media, prompts, dimensions, durations, ratios, seeds, and model-specific options.
 - Multi-file, multi-model, and repeated-run batches with a ten-task safety limit.
 - Two concurrent submissions, independent status polling, failure reporting, and local result downloads.
-- Generated library with model, task, duration, resolution, ratio, size, and save status.
+- In-session results canvas with model, task, duration, resolution, ratio, size, and save status.
+- The Playground does not load or present a historical Library; persistent task records remain available to the local adapter for recovery and diagnostics.
 - Local file paths and task-history location shown inside the product.
 - Responsive touch layout, installable PWA manifest, iOS safe-area handling, and offline shell caching.
 - API key validation, same-origin checks, request-size limits, conservative credit limits, and server-side parameter validation.

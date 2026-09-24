@@ -18,7 +18,7 @@
 <body>
   <header class="appbar">
     <a class="brand" href="/" aria-label="Local AI Studio 首页"><span class="brand-mark">✦</span><strong>Local Studio</strong><span class="brand-product">Media Lab</span></a>
-    <div class="appbar-center"><button class="nav-item active" type="button">Generate</button><button class="nav-item" id="libraryJump" type="button">Library <b id="taskCount">0</b></button></div>
+    <div class="appbar-center"><button class="nav-item active" type="button">Generate</button></div>
     <div class="appbar-actions">
       <div class="experience-toggle" role="group" aria-label="使用模式"><button class="active" type="button" data-experience="simple">简洁</button><button type="button" data-experience="pro">专业</button></div>
       <button class="soft-button install-button" id="installButton" type="button" hidden>安装应用</button>
@@ -27,14 +27,13 @@
   </header>
 
   <main class="canvas">
-    <section class="library" aria-labelledby="libraryTitle">
-      <div class="library-head">
-        <div><span class="kicker">LOCAL AI GENERATION STUDIO</span><h1 id="libraryTitle">Create anything.</h1><p id="libraryDescription">从任务到模型，再到素材与参数，在一个独立工作台完成批量生成。</p></div>
-        <div class="library-actions"><button class="local-badge" id="storageModeBadge" type="button"><i></i> 本地工作台</button><button class="icon-button" id="refreshLibrary" type="button" aria-label="刷新生成库" title="刷新生成库"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7"/></svg></button></div>
+    <section class="results" aria-labelledby="resultsTitle">
+      <div class="results-head">
+        <div><span class="kicker">LOCAL AI GENERATION STUDIO</span><h1 id="resultsTitle">Create anything.</h1><p id="resultsDescription">从任务到模型，再到素材与参数，在一个独立工作台完成批量生成。</p></div>
+        <div class="results-actions"><button class="local-badge" id="storageModeBadge" type="button"><i></i> 本地工作台</button></div>
       </div>
-      <div class="library-filter" id="libraryFilter" role="tablist" aria-label="筛选生成结果"><button class="active" type="button" data-filter="all">全部</button><button type="button" data-filter="video">Video</button><button type="button" data-filter="image">Image</button><button type="button" data-filter="audio">Audio</button><button type="button" data-filter="avatar">Avatar</button></div>
-      <div class="library-grid" id="libraryGrid" aria-live="polite"></div>
-      <div class="empty-library" id="emptyLibrary"><div class="empty-orbit"><span>✦</span></div><h2>Your generations will appear here</h2><p>在下方输入创意，选择类型和模型，然后开始生成。</p></div>
+      <div class="results-grid" id="resultsGrid" aria-live="polite"></div>
+      <div class="empty-results" id="emptyResults"><div class="empty-orbit"><span>✦</span></div><h2>Your generations will appear here</h2><p>在下方输入创意，选择类型和模型，然后开始生成。</p></div>
       <div class="canvas-spacer" aria-hidden="true"></div>
     </section>
   </main>
@@ -82,7 +81,7 @@
       <button class="dialog-primary" id="connectButton" type="submit">验证并连接</button><button class="dialog-secondary" id="disconnectButton" type="button" hidden>断开当前连接</button><p class="form-error" id="keyError" role="alert"></p>
     </form>
   </dialog>
-  <dialog id="welcomeDialog" class="welcome-dialog"><div class="welcome-hero"><span class="welcome-logo">✦</span><span class="kicker">LOCAL AI STUDIO</span><h2>三步开始生成</h2><p>无需写代码。连接自己的 API Key，选择任务和模型，上传素材即可开始。</p></div><div class="welcome-steps"><div><b>1</b><strong>连接</strong><span>API Key 仅用于当前会话</span></div><div><b>2</b><strong>配置</strong><span>选择任务、模型和素材</span></div><div><b>3</b><strong>生成</strong><span>结果进入生成库</span></div></div><div class="welcome-actions"><button class="dialog-secondary" id="skipWelcome" type="button">先看看界面</button><button class="dialog-primary" id="startWelcome" type="button">连接并开始</button></div></dialog>
+  <dialog id="welcomeDialog" class="welcome-dialog"><div class="welcome-hero"><span class="welcome-logo">✦</span><span class="kicker">LOCAL AI STUDIO</span><h2>三步开始生成</h2><p>无需写代码。连接自己的 API Key，选择任务和模型，上传素材即可开始。</p></div><div class="welcome-steps"><div><b>1</b><strong>连接</strong><span>API Key 仅用于当前会话</span></div><div><b>2</b><strong>配置</strong><span>选择任务、模型和素材</span></div><div><b>3</b><strong>生成</strong><span>结果显示在当前画布</span></div></div><div class="welcome-actions"><button class="dialog-secondary" id="skipWelcome" type="button">先看看界面</button><button class="dialog-primary" id="startWelcome" type="button">连接并开始</button></div></dialog>
   <dialog id="installDialog" class="install-dialog"><div class="dialog-head"><div><span class="kicker">INSTALL LOCAL STUDIO</span><h2>安装到这台设备</h2></div><button id="closeInstall" type="button" aria-label="关闭">×</button></div><div class="install-content" id="installContent"></div></dialog>
   <dialog id="storageDialog" class="install-dialog"><div class="dialog-head"><div><span class="kicker">STORAGE &amp; HISTORY</span><h2>保存位置</h2></div><button id="closeStorage" type="button" aria-label="关闭">×</button></div><div class="install-content" id="storageContent"></div></dialog>
   <dialog id="detailDialog" class="detail-dialog"><button class="detail-close" id="closeDetail" type="button" aria-label="关闭">×</button><div id="detailContent"></div></dialog>

@@ -10,6 +10,7 @@ assert.ok(manifest.icons.some(icon => icon.sizes === '512x512'));
 await Promise.all(manifest.icons.map(icon => access(new URL(`public${icon.src}`, root))));
 
 const html = await readFile(new URL('public/index.html', root), 'utf8');
+const app = await readFile(new URL('public/app.js', root), 'utf8');
 assert.match(html, /manifest\.webmanifest/);
 assert.match(html, /apple-mobile-web-app-capable/);
 assert.match(html, /viewport-fit=cover/);
@@ -19,6 +20,8 @@ assert.doesNotMatch(html, /DreamAPI|DreamFace|NewportAI/i, 'the product UI must 
 assert.doesNotMatch(JSON.stringify(manifest), /DreamAPI|DreamFace|NewportAI/i, 'the installed PWA must use independent branding');
 assert.match(html, /fal\.ai/, 'the provider dialog should explain the fal adapter path');
 assert.match(html, /需要 fal API Key 与适配器/, 'the UI must not imply fal is already connected');
+assert.doesNotMatch(html, /id="libraryJump"|id="libraryFilter"|id="refreshLibrary"/, 'the playground must not expose library navigation or filters');
+assert.match(app, /document\.addEventListener\('pointerdown'/, 'the model picker must close when the user clicks outside it');
 
 const worker = await readFile(new URL('public/sw.js', root), 'utf8');
 assert.ok(worker.includes("pathname.startsWith('/api/')") && worker.includes("pathname.startsWith('/local/')"), 'API and private local responses must bypass the cache');

@@ -31,7 +31,7 @@ Hosted isolation is an application boundary, not a complete SaaS identity system
 6. The adapter validates and submits a normalized provider request.
 7. The UI polls the local task ID; the adapter polls the provider task ID.
 8. Local mode downloads successful outputs into `data/outputs`.
-9. The library displays output media and normalized metadata.
+9. The in-session results canvas displays output media and normalized metadata. The Playground does not load historical tasks when it starts.
 
 ## Multi-provider extension
 

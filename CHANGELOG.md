@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.4 — 2026-09-24
+
+- Removed Library navigation, filtering, refresh, and historical-task loading from the playground.
+- Kept an in-session results canvas so newly submitted generations remain visible and downloadable.
+- Made the model picker close when the user clicks anywhere outside the picker or its trigger.
+
 ## 0.2.3 — 2026-09-23
 
 - Added a provider-connection introduction for fal.ai, Replicate, and future adapters.
