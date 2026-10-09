@@ -1,5 +1,12 @@
 # Changelog
 
+## Inline generation inputs — 2026-10-09
+
+- Replaced the Assets panel/button with task-specific upload and preview cards to the left of the prompt.
+- Added inline image/video/audio previews, replace/remove controls, and additive batch uploads within model limits.
+- Fixed one output per request and removed Output count from Settings; retained Runs per model.
+- Included uploaded batch variants in usage estimates and prevented generation during uploads.
+
 ## Simplified batch styling — 2026-10-09
 
 - Removed the redundant outer batch border, rounded background, and container padding.

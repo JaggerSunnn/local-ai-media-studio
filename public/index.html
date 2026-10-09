@@ -30,11 +30,6 @@
 
   <form class="composer-dock" id="generatorForm">
     <div class="composer-shell">
-      <section class="settings-panel assets-panel" id="assetsPanel" hidden>
-        <div class="panel-head"><div><strong>Input assets</strong><span id="assetsModelLabel">Images, video, and audio for your task</span></div><button class="icon-button" id="closeAssets" type="button" aria-label="Close assets">×</button></div>
-        <div class="asset-grid" id="assetFields"></div>
-        <p class="assets-empty" id="assetsEmpty" hidden>No uploads are needed for this task. Enter your text in the prompt below.</p>
-      </section>
       <section class="settings-panel" id="settingsPanel" hidden>
         <div class="panel-head"><div><strong>Generation settings</strong><span id="settingsModelLabel">Settings for the primary model</span></div><button class="icon-button" id="closeSettings" type="button" aria-label="Close settings">×</button></div>
         <div class="text-grid" id="textFields"></div><div class="option-grid" id="optionFields"></div>
@@ -51,9 +46,8 @@
         <div class="context-selectors"><label class="compact-select"><span>Task</span><select id="operationSelect"></select></label><button class="model-trigger" id="modelTrigger" type="button"><span class="model-stack">◆</span><span><small>Models</small><strong id="modelTriggerLabel">Choose models</strong></span><b id="selectedModelCount">0</b></button></div>
       </div>
 
-      <div class="asset-chips" id="assetChips"></div>
-      <div class="prompt-row"><textarea id="promptInput" rows="2" maxlength="4000" placeholder="Describe what you want to create…"></textarea><button class="run-button" id="submitButton" type="submit"><span>Run</span><kbd>⌘↵</kbd></button></div>
-      <div class="composer-toolbar"><div class="toolbar-left"><button class="tool-button" id="quickUpload" type="button"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Assets</span></button><button class="tool-button" id="settingsButton" type="button"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6"/></svg><span>Settings</span></button><span class="toolbar-summary" id="configSummary">480p · 5s</span><button class="tool-button api-key-button" id="keyButton" type="button">Connect API key</button></div><div class="toolbar-right"><span class="connection"><i></i><span id="connectionLabel">Checking connection</span></span><span id="estimateCredits">Estimated usage pending</span><span class="divider"></span><span id="promptCount">0 / 4000</span></div></div>
+      <div class="prompt-row"><div class="composer-inputs" id="composerInputs" aria-label="Input media" hidden></div><textarea id="promptInput" rows="2" maxlength="4000" placeholder="Describe what you want to create…"></textarea><button class="run-button" id="submitButton" type="submit"><span>Run</span><kbd>⌘↵</kbd></button></div>
+      <div class="composer-toolbar"><div class="toolbar-left"><button class="tool-button" id="settingsButton" type="button"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6"/></svg><span>Settings</span></button><span class="toolbar-summary" id="configSummary">480p · 5s</span><button class="tool-button api-key-button" id="keyButton" type="button">Connect API key</button></div><div class="toolbar-right"><span class="connection"><i></i><span id="connectionLabel">Checking connection</span></span><span id="estimateCredits">Estimated usage pending</span><span class="divider"></span><span id="promptCount">0 / 4000</span></div></div>
     </div>
   </form>
 

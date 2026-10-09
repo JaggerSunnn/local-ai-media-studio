@@ -1,5 +1,5 @@
-const CACHE = 'local-ai-studio-v15';
-const SHELL = ['/', '/sandbox.css', '/product.css', '/app.js', '/launch-config.js', '/languages.js', '/voice-picker.js', '/result-model.js', '/results-view.js', '/media-preview.js', '/media-layout.js', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png'];
+const CACHE = 'local-ai-studio-v16';
+const SHELL = ['/', '/sandbox.css', '/product.css', '/app.js', '/launch-config.js', '/languages.js', '/voice-picker.js', '/result-model.js', '/results-view.js', '/media-preview.js', '/media-layout.js', '/composer-inputs.js', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));

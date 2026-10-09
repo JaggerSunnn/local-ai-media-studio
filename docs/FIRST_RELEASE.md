@@ -47,9 +47,9 @@ Run `npm start`, then visit http://127.0.0.1:8788/. Connect an API key in the br
 - [Do TTS Common](https://api.newportai.com/api-docs/do-tts-common)
 - [Do TTS Pro](https://api.newportai.com/api-docs/do-tts-pro)
 
-## Assets and Settings panels
+## Inline inputs and Settings
 
-Assets opens a dedicated input-media panel with the image, video, and audio fields required by the current task. Text-only tasks show an explicit no-upload message. Settings opens a separate panel for resolution, duration, dimensions, quality, language, voice IDs, and runs per model. Opening either closes the other and the model picker. File uploads and settings retain their values when switching panels.
+Task-specific image, video, and audio upload cards appear directly to the left of the prompt. Text-only tasks do not show upload cards. Uploaded files stay in place as previews with replace/remove controls. Multiple files can be added up to the model limit; the first single-file input supports batch variants. Settings contains resolution, duration, dimensions, quality, language, voice IDs, and Runs per model. Output count is hidden and fixed to one per API request; Runs per model is the only quantity control. Uploads disable Run until they finish; switching tasks during an upload does not attach those files to the new task.
 
 ## Voice library (2026-10-09)
 

@@ -39,6 +39,8 @@ const imageField = (id,label,api=id,extra={}) => ({id,label,api,type:'image',req
 export function resolveLaunchModel(base, operationId) {
   if (!base || base.status !== 'active') return base;
   const model = {...base,label:labels[base.id]||base.label,inputs:base.inputs.map(field=>({...field})),options:base.options.map(option=>({...option}))};
+  // One result per request; Runs per model is the sole output quantity control.
+  model.options=model.options.map(option=>['n','num'].includes(option.id)?{...option,value:1,hidden:true}:option);
   const setDefault = (id,value) => {const option=model.options.find(item=>item.id===id);if(option)option.value=value;};
   if(base.id.startsWith('wan-'))model.settingsNote='Duration and aspect ratio use the model defaults; this endpoint does not expose these controls.';
   if (operationId==='text-to-video') model.inputs=model.inputs.filter(field=>field.type==='textarea');
