@@ -36,6 +36,10 @@ const labels = {
   'voice-clone':'Voice Clone','dreamact-2-1':'DreamAct'
 };
 const imageField = (id,label,api=id,extra={}) => ({id,label,api,type:'image',required:true,...extra});
+export function settingsModelFor(operationId,models,primary){
+  if(operationId==='image-editing')return models.find(model=>model.id==='image-outpainting')||primary;
+  return primary;
+}
 export function resolveLaunchModel(base, operationId) {
   if (!base || base.status !== 'active') return base;
   const model = {...base,label:labels[base.id]||base.label,inputs:base.inputs.map(field=>({...field})),options:base.options.map(option=>({...option}))};

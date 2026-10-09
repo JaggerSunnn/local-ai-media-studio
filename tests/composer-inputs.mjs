@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import models from '../catalog.mjs';
-import {capabilities,resolveLaunchModel} from '../public/launch-config.js';
+import {capabilities,resolveLaunchModel,settingsModelFor} from '../public/launch-config.js';
 import {mediaUploadLimit,mergeMediaFiles,remapMediaFiles,mergeReferenceFiles,referenceKind} from '../public/composer-inputs.js';
 
 const fields=[{id:'first',type:'image'},{id:'last',type:'image'},{id:'references',type:'image',multiple:true,max:4}];
@@ -26,6 +26,17 @@ for(const category of Object.values(capabilities))for(const operation of categor
   }
 }
 assert.ok(countControls>0);
+const editingIds=['image-enhance','image-remove-bg','image-colorize','image-outpainting'];
+const permutations=items=>items.length?items.flatMap((item,index)=>permutations(items.filter((_,i)=>i!==index)).map(rest=>[item,...rest])):[[]];
+for(let mask=1;mask<16;mask++){
+  const ids=editingIds.filter((_,index)=>mask&(1<<index));
+  for(const order of permutations(ids)){
+    const selected=order.map(id=>resolveLaunchModel(models.find(model=>model.id===id),'image-editing'));
+    const expected=ids.includes('image-outpainting')?'image-outpainting':selected[0].id;
+    assert.equal(settingsModelFor('image-editing',selected,selected[0]).id,expected,'outpainting owns settings regardless of selection size/order');
+    assert.equal(settingsModelFor('text-to-image',selected,selected[0]),selected[0],'other tasks retain the primary-model settings policy');
+  }
+}
 const referenceFields=[{id:'images',type:'image',multiple:true,max:9},{id:'videos',type:'video',multiple:true,max:3},{id:'audios',type:'audio',multiple:true,max:3}];
 const image={name:'photo.png',type:'image/png'},video={name:'clip.mp4',type:'video/mp4'},audio={name:'voice.wav',type:'audio/wav'};
 const mixed=mergeReferenceFiles(referenceFields,{},[image,video,audio]);

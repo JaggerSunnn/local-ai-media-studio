@@ -1,5 +1,10 @@
 # Changelog
 
+## Outpainting settings priority — 2026-10-09
+
+- Always displayed Outpainting expansion controls when selected in Image Editing, independent of model selection order or count.
+- Preserved entered expansion values while adding/removing other editing models, and clarified that these settings apply only to Outpainting.
+
 ## Unified reference upload — 2026-10-09
 
 - Replaced separate image/video/audio slots in Reference to Video with one mixed-media upload card.
