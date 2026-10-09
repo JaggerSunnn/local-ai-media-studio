@@ -1,4 +1,4 @@
-const CACHE = 'local-ai-studio-v14';
+const CACHE = 'local-ai-studio-v15';
 const SHELL = ['/', '/sandbox.css', '/product.css', '/app.js', '/launch-config.js', '/languages.js', '/voice-picker.js', '/result-model.js', '/results-view.js', '/media-preview.js', '/media-layout.js', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', event => {

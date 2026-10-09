@@ -1,5 +1,10 @@
 # Changelog
 
+## Simplified batch styling — 2026-10-09
+
+- Removed the redundant outer batch border, rounded background, and container padding.
+- Kept numbered batch summaries, spacing, individual result cards, and ratio-aware galleries.
+
 ## Ratio-aware batch galleries — 2026-10-09
 
 - Displayed square and portrait outputs at the same column width with their natural height; landscape outputs use two columns per desktop row.
