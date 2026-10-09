@@ -1,5 +1,11 @@
 # Changelog
 
+## Full image previews — 2026-10-09
+
+- Fixed portrait images overflowing and being clipped by comparison-card media grids.
+- Sized images to the preview container with contain scaling, centered letterboxing, and a taller responsive image stage.
+
+
 ## Credit consumption display — 2026-10-09
 
 - Added numeric-string credit parsing and authenticated usage backfill for completed tasks.
