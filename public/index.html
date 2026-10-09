@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Local Studio">
   <title>Local AI Studio — Media Sandbox</title>
-  <meta name="description" content="在一个独立的本地工作台中选择模型、上传素材、批量生成并保存结果。">
+  <meta name="description" content="Choose models, upload assets, generate in batches, and save results locally.">
   <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <link rel="manifest" href="/manifest.webmanifest">
@@ -16,76 +16,78 @@
   <link rel="stylesheet" href="/product.css">
 </head>
 <body>
-  <header class="appbar">
-    <a class="brand" href="/" aria-label="Local AI Studio 首页"><span class="brand-mark">✦</span><strong>Local Studio</strong><span class="brand-product">Media Lab</span></a>
-    <div class="appbar-center"><button class="nav-item active" type="button">Generate</button></div>
-    <div class="appbar-actions">
-      <div class="experience-toggle" role="group" aria-label="使用模式"><button class="active" type="button" data-experience="simple">简洁</button><button type="button" data-experience="pro">专业</button></div>
-      <button class="soft-button install-button" id="installButton" type="button" hidden>安装应用</button>
-      <span class="connection"><i></i><span id="connectionLabel">检测连接</span></span><button class="soft-button" id="keyButton" type="button">连接 API Key</button>
-    </div>
-  </header>
-
   <main class="canvas">
     <section class="results" aria-labelledby="resultsTitle">
       <div class="results-head">
-        <div><span class="kicker">LOCAL AI GENERATION STUDIO</span><h1 id="resultsTitle">Create anything.</h1><p id="resultsDescription">从任务到模型，再到素材与参数，在一个独立工作台完成批量生成。</p></div>
-        <div class="results-actions"><button class="local-badge" id="storageModeBadge" type="button"><i></i> 本地工作台</button></div>
+        <div><span class="kicker">LOCAL AI GENERATION STUDIO</span><h1 id="resultsTitle">Create anything.</h1><p id="resultsDescription">Choose a task and models, add your assets, and generate in batches.</p></div>
+        <div class="results-actions"><button class="local-badge" id="storageModeBadge" type="button"><i></i> Local workspace</button></div>
       </div>
       <div class="results-grid" id="resultsGrid" aria-live="polite"></div>
-      <div class="empty-results" id="emptyResults"><div class="empty-orbit"><span>✦</span></div><h2>Your generations will appear here</h2><p>在下方输入创意，选择类型和模型，然后开始生成。</p></div>
+      <div class="empty-results" id="emptyResults"><div class="empty-orbit"><span>✦</span></div><h2>Your generations will appear here</h2><p>Enter a prompt below, choose a task and models, then run.</p></div>
       <div class="canvas-spacer" aria-hidden="true"></div>
     </section>
   </main>
 
   <form class="composer-dock" id="generatorForm">
     <div class="composer-shell">
+      <section class="settings-panel assets-panel" id="assetsPanel" hidden>
+        <div class="panel-head"><div><strong>Input assets</strong><span id="assetsModelLabel">Images, video, and audio for your task</span></div><button class="icon-button" id="closeAssets" type="button" aria-label="Close assets">×</button></div>
+        <div class="asset-grid" id="assetFields"></div>
+        <p class="assets-empty" id="assetsEmpty" hidden>No uploads are needed for this task. Enter your text in the prompt below.</p>
+      </section>
       <section class="settings-panel" id="settingsPanel" hidden>
-        <div class="panel-head"><div><strong>Generation settings</strong><span id="settingsModelLabel">按主模型配置</span></div><button class="icon-button" id="closeSettings" type="button" aria-label="关闭设置">×</button></div>
-        <div class="asset-grid" id="assetFields"></div><div class="text-grid" id="textFields"></div><div class="option-grid" id="optionFields"></div>
-        <div class="settings-foot"><label class="batch-field pro-setting">每个模型生成 <input id="batchCount" type="number" min="1" max="10" value="1"> 次</label><label class="profile-field">内容分级 <select id="profileSelect"><option value="standard">标准内容</option><option value="mature-audience">成年受众</option></select></label><label class="adult-confirm" id="adultConfirm"><input type="checkbox" id="adultCheckbox"> 我确认使用者已成年，并遵守授权及适用法律。</label></div>
+        <div class="panel-head"><div><strong>Generation settings</strong><span id="settingsModelLabel">Settings for the primary model</span></div><button class="icon-button" id="closeSettings" type="button" aria-label="Close settings">×</button></div>
+        <div class="text-grid" id="textFields"></div><div class="option-grid" id="optionFields"></div>
+        <p class="settings-note" id="settingsNote"></p><div class="settings-foot"><label class="batch-field">Runs per model <input id="batchCount" type="number" min="1" max="10" value="1"> runs</label></div>
       </section>
 
       <section class="model-popover" id="modelPopover" hidden>
-        <div class="panel-head"><div><strong>Choose models</strong><span id="modelPickerHint">选择一个模型；专业模式支持多模型对比</span></div><button class="text-button pro-setting" id="clearModels" type="button">清除</button></div>
-        <div class="model-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="modelSearch" type="search" placeholder="搜索模型"></div><div class="model-list" id="modelList"></div>
+        <div class="panel-head"><div><strong>Choose models</strong><span id="modelPickerHint">Select compatible models to run the same input in parallel</span></div><button class="text-button" id="clearModels" type="button">Clear</button></div>
+        <div class="model-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="modelSearch" type="search" placeholder="Search models"></div><div class="model-list" id="modelList"></div>
       </section>
 
       <div class="composer-context">
         <div class="category-tabs" id="categoryTabs"><button class="active" type="button" data-category="video"><span>▶</span>Video</button><button type="button" data-category="image"><span>▧</span>Image</button><button type="button" data-category="audio"><span>♫</span>Audio</button><button type="button" data-category="avatar"><span>◉</span>Avatar</button></div>
-        <div class="context-selectors"><label class="compact-select"><span>Task</span><select id="operationSelect"></select></label><button class="model-trigger" id="modelTrigger" type="button"><span class="model-stack">◆</span><span><small>Models</small><strong id="modelTriggerLabel">选择模型</strong></span><b id="selectedModelCount">0</b></button></div>
+        <div class="context-selectors"><label class="compact-select"><span>Task</span><select id="operationSelect"></select></label><button class="model-trigger" id="modelTrigger" type="button"><span class="model-stack">◆</span><span><small>Models</small><strong id="modelTriggerLabel">Choose models</strong></span><b id="selectedModelCount">0</b></button></div>
       </div>
 
       <div class="asset-chips" id="assetChips"></div>
       <div class="prompt-row"><textarea id="promptInput" rows="2" maxlength="4000" placeholder="Describe what you want to create…"></textarea><button class="run-button" id="submitButton" type="submit"><span>Run</span><kbd>⌘↵</kbd></button></div>
-      <div class="composer-toolbar"><div class="toolbar-left"><button class="tool-button" id="quickUpload" type="button"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>素材</span></button><button class="tool-button" id="settingsButton" type="button"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6"/></svg><span>参数</span></button><span class="toolbar-summary" id="configSummary">480p · 5s</span></div><div class="toolbar-right"><span id="estimateCredits">预计用量待确认</span><span class="divider"></span><span id="promptCount">0 / 4000</span></div></div>
+      <div class="composer-toolbar"><div class="toolbar-left"><button class="tool-button" id="quickUpload" type="button"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Assets</span></button><button class="tool-button" id="settingsButton" type="button"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6"/></svg><span>Settings</span></button><span class="toolbar-summary" id="configSummary">480p · 5s</span><button class="tool-button api-key-button" id="keyButton" type="button">Connect API key</button></div><div class="toolbar-right"><span class="connection"><i></i><span id="connectionLabel">Checking connection</span></span><span id="estimateCredits">Estimated usage pending</span><span class="divider"></span><span id="promptCount">0 / 4000</span></div></div>
     </div>
   </form>
 
+  <dialog id="voiceDialog" class="voice-dialog">
+    <div class="dialog-head"><div><span class="kicker" id="voiceTypeLabel">Common voices</span><h2>Voice library</h2></div><button id="closeVoices" type="button" aria-label="Close voice library">×</button></div>
+    <div class="voice-filters"><label><span>Search</span><input id="voiceSearch" type="search" placeholder="Search name or Voice ID"></label><label><span>Language</span><select id="voiceLanguage"><option value="all">All languages</option></select></label><label><span>Gender</span><select id="voiceGender"><option value="all">All genders</option><option value="female">Female</option><option value="male">Male</option></select></label></div>
+    <div class="voice-directory-head"><span id="voiceCount">Loading voices…</span><button id="refreshVoices" class="text-button" type="button">Refresh</button></div>
+    <ul id="voiceList" class="voice-list" aria-label="Available voices"></ul>
+    <div class="voice-footer"><span id="voiceStatus" role="status">Loading voices…</span><p>Preview plays the provider's existing sample. To use another voice, enter its Voice ID directly in Settings.</p></div>
+  </dialog>
   <dialog id="keyDialog" class="provider-dialog">
-    <div class="dialog-head"><div><span class="kicker">CONNECT API PROVIDER</span><h2>连接你的 API Key</h2></div><button id="closeKey" type="button" aria-label="关闭">×</button></div>
+    <div class="dialog-head"><div><span class="kicker">CONNECT API PROVIDER</span><h2>Connect your API key</h2></div><button id="closeKey" type="button" aria-label="Close">×</button></div>
     <form id="keyForm" class="key-form">
-      <p id="keyPrivacyText">Key 只发送到本机服务，并仅保存在当前 Node 进程内存中。</p>
+      <p id="keyPrivacyText">Your key is sent to the local service and held only in memory for this session.</p>
       <section class="provider-intro" aria-labelledby="providerIntroTitle">
-        <div class="provider-intro-head"><strong id="providerIntroTitle">多平台连接</strong><span>Bring your own key</span></div>
-        <p>不同平台使用各自的 API Key 和计费账户。当前版本已经内置一个兼容适配器；其他平台需要安装对应适配器后才能调用。</p>
+        <div class="provider-intro-head"><strong id="providerIntroTitle">Connect a provider</strong><span>Bring your own key</span></div>
+        <p>Each platform requires its own API key and billing account. One compatible adapter is included; other providers require a separate adapter.</p>
         <div class="provider-grid">
-          <div class="provider-card active"><span class="provider-symbol">◆</span><span><strong>Compatible API</strong><small>当前可用 · 42 个接口能力</small></span><b>Ready</b></div>
-          <div class="provider-card"><span class="provider-symbol">F</span><span><strong>fal.ai</strong><small>需要 fal API Key 与适配器</small></span><b>Adapter</b></div>
-          <div class="provider-card"><span class="provider-symbol">R</span><span><strong>Replicate</strong><small>需要 Replicate Token 与适配器</small></span><b>Adapter</b></div>
-          <div class="provider-card"><span class="provider-symbol">＋</span><span><strong>More providers</strong><small>可扩展 OpenAI、Stability AI 等</small></span><b>Extend</b></div>
+          <div class="provider-card active"><span class="provider-symbol">◆</span><span><strong>Compatible API</strong><small>First-release model selection</small></span><b>Ready</b></div>
+          <div class="provider-card"><span class="provider-symbol">F</span><span><strong>fal.ai</strong><small>Requires a fal API key and adapter</small></span><b>Adapter</b></div>
+          <div class="provider-card"><span class="provider-symbol">R</span><span><strong>Replicate</strong><small>Requires a Replicate token and adapter</small></span><b>Adapter</b></div>
+          <div class="provider-card"><span class="provider-symbol">＋</span><span><strong>More providers</strong><small>Extensible to OpenAI, Stability AI, and more</small></span><b>Extend</b></div>
         </div>
-        <small class="provider-note">平台名称仅用于说明兼容规划，不代表合作、赞助或当前已接入。</small>
+        <small class="provider-note">Provider names describe planned compatibility and do not imply affiliation or an active connection.</small>
       </section>
-      <label><span>当前兼容平台 API Key</span><input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…" required></label>
-      <button class="dialog-primary" id="connectButton" type="submit">验证并连接</button><button class="dialog-secondary" id="disconnectButton" type="button" hidden>断开当前连接</button><p class="form-error" id="keyError" role="alert"></p>
+      <label><span>Compatible provider API key</span><input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…" required></label>
+      <button class="dialog-primary" id="connectButton" type="submit">Verify and connect</button><button class="dialog-secondary" id="disconnectButton" type="button" hidden>Disconnect</button><p class="form-error" id="keyError" role="alert"></p>
     </form>
   </dialog>
-  <dialog id="welcomeDialog" class="welcome-dialog"><div class="welcome-hero"><span class="welcome-logo">✦</span><span class="kicker">LOCAL AI STUDIO</span><h2>三步开始生成</h2><p>无需写代码。连接自己的 API Key，选择任务和模型，上传素材即可开始。</p></div><div class="welcome-steps"><div><b>1</b><strong>连接</strong><span>API Key 仅用于当前会话</span></div><div><b>2</b><strong>配置</strong><span>选择任务、模型和素材</span></div><div><b>3</b><strong>生成</strong><span>结果显示在当前画布</span></div></div><div class="welcome-actions"><button class="dialog-secondary" id="skipWelcome" type="button">先看看界面</button><button class="dialog-primary" id="startWelcome" type="button">连接并开始</button></div></dialog>
-  <dialog id="installDialog" class="install-dialog"><div class="dialog-head"><div><span class="kicker">INSTALL LOCAL STUDIO</span><h2>安装到这台设备</h2></div><button id="closeInstall" type="button" aria-label="关闭">×</button></div><div class="install-content" id="installContent"></div></dialog>
-  <dialog id="storageDialog" class="install-dialog"><div class="dialog-head"><div><span class="kicker">STORAGE &amp; HISTORY</span><h2>保存位置</h2></div><button id="closeStorage" type="button" aria-label="关闭">×</button></div><div class="install-content" id="storageContent"></div></dialog>
-  <dialog id="detailDialog" class="detail-dialog"><button class="detail-close" id="closeDetail" type="button" aria-label="关闭">×</button><div id="detailContent"></div></dialog>
+  <dialog id="welcomeDialog" class="welcome-dialog"><div class="welcome-hero"><span class="welcome-logo">✦</span><span class="kicker">LOCAL AI STUDIO</span><h2>Create in three steps</h2><p>Connect your API key, choose a task and model, and upload your assets. No coding required.</p></div><div class="welcome-steps"><div><b>1</b><strong>Connect</strong><span>Your API key stays in this session</span></div><div><b>2</b><strong>Configure</strong><span>Choose a task, model, and assets</span></div><div><b>3</b><strong>Generate</strong><span>Results appear on your canvas</span></div></div><div class="welcome-actions"><button class="dialog-secondary" id="skipWelcome" type="button">Explore the studio</button><button class="dialog-primary" id="startWelcome" type="button">Connect and start</button></div></dialog>
+
+  <dialog id="storageDialog" class="install-dialog"><div class="dialog-head"><div><span class="kicker">STORAGE &amp; HISTORY</span><h2>Storage locations</h2></div><button id="closeStorage" type="button" aria-label="Close">×</button></div><div class="install-content" id="storageContent"></div></dialog>
+  <dialog id="detailDialog" class="detail-dialog"><button class="detail-close" id="closeDetail" type="button" aria-label="Close">×</button><div id="detailContent"></div></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="/app.js" defer></script>
+  <script src="/app.js" type="module"></script>
 </body>
 </html>

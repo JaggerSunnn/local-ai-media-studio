@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {normalizeVoices} from '../voice-catalog.mjs';
+import {filterVoices} from '../public/voice-picker.js';
+const voices=JSON.parse(await readFile(new URL('../data/voice_catalog.json',import.meta.url),'utf8'));
+assert.equal(new Set(voices.map(voice=>`${voice.type}:${voice.id}`)).size,voices.length);
+assert.ok(voices.length>100,'the complete saved provider directory is shipped');
+for(const voice of voices){assert.ok(voice.name&&voice.id);assert.ok(['common','pro'].includes(voice.type));if(voice.previewUrl)assert.equal(new URL(voice.previewUrl).protocol,'https:');}
+const femaleEnglish=filterVoices(voices,{type:'common',language:'en',gender:'female'});
+assert.ok(femaleEnglish.length>1);
+assert.ok(femaleEnglish.every(voice=>voice.type==='common'&&voice.languageCode==='en'&&voice.timbre==='female'));
+const multilingual=voices.find(voice=>voice.type==='pro'&&voice.language==='Multilingual');
+assert.ok(filterVoices(voices,{type:'pro',language:'hi'}).includes(multilingual),'multilingual Pro voices remain visible for the selected language');
+const selected=voices.find(voice=>voice.name==='Declan'&&voice.type==='common');
+assert.deepEqual(filterVoices(voices,{type:'common',search:selected.id}),[selected],'manual IDs can also be searched in the library');
+const fixture={data:{audioList:[{audioId:selected.id,audioName:'Test',vision:'Common',lan:'Arbic',timbreList:['Female'],audioUrl:'javascript:alert(1)'},{audioId:selected.id,audioName:'Duplicate',vision:'Common',lan:'English',timbreList:['Male']}]}};
+const normalized=normalizeVoices(fixture);
+assert.equal(normalized.length,1);assert.equal(normalized[0].languageCode,'ar');assert.equal(normalized[0].language,'Arabic');assert.equal(normalized[0].previewUrl,null);
+assert.throws(()=>normalizeVoices({data:{audioList:[]}}));
+console.log(`Voice directory, model/language/gender/search filtering, preview URL validation, and deduplication passed (${voices.length} voices).`);

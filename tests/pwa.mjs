@@ -14,12 +14,12 @@ const app = await readFile(new URL('public/app.js', root), 'utf8');
 assert.match(html, /manifest\.webmanifest/);
 assert.match(html, /apple-mobile-web-app-capable/);
 assert.match(html, /viewport-fit=cover/);
-assert.match(html, /data-experience="simple"/);
-assert.match(html, /data-experience="pro"/);
+assert.doesNotMatch(html, /data-experience=|简洁|专业/, 'the playground must use one unified interface');
+assert.doesNotMatch(app, /applyExperience|localstudio_experience|state\.experience/, 'mode-specific application logic must be removed');
 assert.doesNotMatch(html, /DreamAPI|DreamFace|NewportAI/i, 'the product UI must not imply provider ownership or branding');
 assert.doesNotMatch(JSON.stringify(manifest), /DreamAPI|DreamFace|NewportAI/i, 'the installed PWA must use independent branding');
 assert.match(html, /fal\.ai/, 'the provider dialog should explain the fal adapter path');
-assert.match(html, /需要 fal API Key 与适配器/, 'the UI must not imply fal is already connected');
+assert.match(html, /Requires a fal API key and adapter/, 'the UI must not imply fal is already connected');
 assert.doesNotMatch(html, /id="libraryJump"|id="libraryFilter"|id="refreshLibrary"/, 'the playground must not expose library navigation or filters');
 assert.match(app, /document\.addEventListener\('pointerdown'/, 'the model picker must close when the user clicks outside it');
 

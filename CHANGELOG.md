@@ -1,5 +1,26 @@
 # Changelog
 
+## Voice library update — 2026-10-09
+
+- Added a searchable, scrollable Common/Pro voice library with language/gender filters and official sample playback.
+- Unified the field label as Voice ID, preserving manual entry and per-model choices.
+- Synced 232 official voices and added a public catalog refresh endpoint with bundled fallback.
+- Removed the standalone top navigation and install entry; moved API key controls into the web generation composer.
+
+
+## 0.2.5 — 2026-10-08
+
+- Replaced the Simple / Pro mode switch with one unified Playground interface.
+- Made multi-model selection, batch count, cost estimates, and clear-model controls available in the same frontend.
+- Removed mode-specific state, local preferences, styling, and event handling.
+- Added a shared first-release menu with 12 tasks, explicit default models, and validated task-specific media inputs.
+- Switched the interface and API feedback to English; model names no longer include task labels.
+- Removed content-profile controls; mapped DreamVideo 1.5 to Wan and excluded Vidu Q2 from the launch menu.
+- Updated Gemini model identifiers and supported image presets; covered 46 task/model request combinations with local contract tests.
+
+- Split Assets and Settings into dedicated media-input and generation-parameter panels.
+- Added model-specific TTS language menus with uniform names/codes and shared-language filtering for multi-model runs.
+
 ## 0.2.4 — 2026-09-24
 
 - Removed Library navigation, filtering, refresh, and historical-task loading from the playground.

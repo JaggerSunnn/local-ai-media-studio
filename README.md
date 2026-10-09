@@ -6,10 +6,7 @@ An independent open-source generation workspace. Choose a task, compare compatib
 
 > **Independent project:** This repository is maintained by its open-source contributors. It is not an official product of, published by, sponsored by, or affiliated with DreamAPI, DreamFace, or NewportAI. Users connect their own API credentials to compatible provider endpoints.
 
-Local AI Media Studio serves two audiences from the same codebase:
-
-- **Simple mode** guides creators through one task and one model at a time.
-- **Pro mode** adds multi-model comparison, repeated runs, batch files, cost estimates, and concurrent task submission.
+Local AI Media Studio uses one unified interface for creators and technical users. The same workflow supports single-model generation, multi-model comparison, repeated runs, batch files, cost estimates, and concurrent task submission without switching modes.
 
 It supports two delivery modes:
 
@@ -163,3 +160,11 @@ The checks cover catalog integrity, PWA assets, local API-key non-persistence, b
 ## License
 
 [MIT](LICENSE). Third-party provider names and marks belong to their respective owners. Their presence in compatibility metadata does not indicate sponsorship, affiliation, or endorsement.
+
+### 首期模型菜单
+
+工作台按 Video / Image / Audio / Avatar 展示 12 个首期任务，界面统一使用英文。DreamVideo 1.5 对应 Wan 2.1 接口；暂不展示 Vidu Q2。默认模型、素材校验和模型规格详见 [首期配置说明](docs/FIRST_RELEASE.md)。底层 42 个接口映射保留。
+
+### 音色选择与试听
+
+Audio → Text to Speech → Settings 中的 Voice ID 支持手动粘贴，也可以点击 Browse voices 从官方目录选择。列表支持滚动、名称/ID 搜索、语言与性别筛选；Common 与 Pro 分开显示。Preview 播放官方已有样本，不提交生成任务。离线包内置 2026-10-09 同步的 232 个音色，Refresh 可以联网更新当前会话中的目录。没有样本的音色会显示 No preview，仍可选择。Do TTS Clone 继续使用用户自己的 cloneId。
