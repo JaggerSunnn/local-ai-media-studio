@@ -49,7 +49,7 @@ Run `npm start`, then visit http://127.0.0.1:8788/. Connect an API key in the br
 
 ## Inline inputs and Settings
 
-Task-specific image, video, and audio upload cards appear directly to the left of the prompt. Text-only tasks do not show upload cards. Uploaded files stay in place as previews with replace/remove controls. Multiple files can be added up to the model limit; the first single-file input supports batch variants. Settings contains resolution, duration, dimensions, quality, language, voice IDs, and Runs per model. Output count is hidden and fixed to one per API request; Runs per model is the only quantity control. Uploads disable Run until they finish; switching tasks during an upload does not attach those files to the new task.
+Task-specific image, video, and audio upload cards appear directly to the left of the prompt. Reference to Video uses one Add media card accepting images, videos, and audio together; file types are detected automatically and routed to the correct provider fields. Mixed references share one preview strip with remove and cross-type replacement support. Per-type model limits still apply. Text-only tasks do not show upload cards. Uploaded files stay in place as previews with replace/remove controls. Multiple files can be added up to the model limit; the first single-file input supports batch variants. Settings contains resolution, duration, dimensions, quality, language, voice IDs, and Runs per model. Output count is hidden and fixed to one per API request; Runs per model is the only quantity control. Uploads disable Run until they finish; switching tasks during an upload does not attach those files to the new task.
 
 ## Voice library (2026-10-09)
 

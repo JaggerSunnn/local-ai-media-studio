@@ -1,5 +1,11 @@
 # Changelog
 
+## Unified reference upload — 2026-10-09
+
+- Replaced separate image/video/audio slots in Reference to Video with one mixed-media upload card.
+- Automatically routed uploaded references by type, with unified previews and cross-type replacement.
+- Preserved per-model reference limits and rejected unsupported files before uploading.
+
 ## Inline generation inputs — 2026-10-09
 
 - Replaced the Assets panel/button with task-specific upload and preview cards to the left of the prompt.

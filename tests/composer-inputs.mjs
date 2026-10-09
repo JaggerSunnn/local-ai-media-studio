@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import models from '../catalog.mjs';
 import {capabilities,resolveLaunchModel} from '../public/launch-config.js';
-import {mediaUploadLimit,mergeMediaFiles,remapMediaFiles} from '../public/composer-inputs.js';
+import {mediaUploadLimit,mergeMediaFiles,remapMediaFiles,mergeReferenceFiles,referenceKind} from '../public/composer-inputs.js';
 
 const fields=[{id:'first',type:'image'},{id:'last',type:'image'},{id:'references',type:'image',multiple:true,max:4}];
 assert.equal(mediaUploadLimit(fields,fields[0]),10,'first single-file slot supports batch variants');
@@ -26,4 +26,16 @@ for(const category of Object.values(capabilities))for(const operation of categor
   }
 }
 assert.ok(countControls>0);
-console.log('Inline input batch limits, additive upload, isolated replacement, and one-output-per-run model defaults passed.');
+const referenceFields=[{id:'images',type:'image',multiple:true,max:9},{id:'videos',type:'video',multiple:true,max:3},{id:'audios',type:'audio',multiple:true,max:3}];
+const image={name:'photo.png',type:'image/png'},video={name:'clip.mp4',type:'video/mp4'},audio={name:'voice.wav',type:'audio/wav'};
+const mixed=mergeReferenceFiles(referenceFields,{},[image,video,audio]);
+assert.deepEqual(mixed.assets,{images:[image],videos:[video],audios:[audio]},'mixed uploads route into the provider image/video/audio fields');
+assert.equal(referenceKind({name:'VOICE.MP3',type:''}),'audio','extension fallback supports files without a MIME type');
+assert.equal(referenceKind({name:'clip.mov',type:'application/octet-stream'}),'video');
+assert.throws(()=>referenceKind({name:'document.pdf',type:'application/pdf'}),/image, video, or audio/);
+const swapped=mergeReferenceFiles(referenceFields,mixed.assets,[video],{replaceField:'images',replaceIndex:0});
+assert.deepEqual(swapped.assets,{images:[],videos:[video,video],audios:[audio]},'cross-type replacement removes the old field and routes the new file');
+assert.deepEqual(mixed.assets.images,[image],'cross-type replacement leaves the source collection unchanged');
+assert.throws(()=>mergeReferenceFiles(referenceFields,{audios:[audio,audio,audio]},[audio]),/up to 3 audio/,'unified input enforces per-type model limits before upload');
+assert.throws(()=>mergeReferenceFiles(referenceFields,mixed.assets,[image,video],{replaceField:'images',replaceIndex:0}),/one file/);
+console.log('Inline inputs, one-output defaults, mixed-media reference routing, cross-type replacement, and model limits passed.');
