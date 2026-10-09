@@ -1,5 +1,12 @@
 # Changelog
 
+## Ratio-aware batch galleries — 2026-10-09
+
+- Displayed square and portrait outputs at the same column width with their natural height; landscape outputs use two columns per desktop row.
+- Used actual image/video dimensions to correct requested aspect ratios, keeping the full output visible without a fixed-height letterbox.
+- Added batch outlines and numbered headings to distinguish submissions sharing one prompt; retained sticky input summaries and comparison actions.
+- Adapted galleries to two columns on smaller screens and one column on narrow phones.
+
 ## Full image previews — 2026-10-09
 
 - Fixed portrait images overflowing and being clipped by comparison-card media grids.

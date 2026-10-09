@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {groupTasks,comparisonBadges,formatCost,outputCredits,taskTiming,groupCost} from '../public/result-model.js';
+import {mediaLayout} from '../public/media-layout.js';
 const batch={id:'batch-a',createdAt:'2026-10-09T00:00:00Z',expectedTasks:3,modelIds:['a','b','c'],prompt:'Shared prompt'};
 const task=(id,ms,credits)=>({id,modelId:id,mode:'live',status:'succeeded',createdAt:'2026-10-09T00:00:00Z',completedAt:`2026-10-09T00:00:${String(ms/1000).padStart(2,'0')}Z`,executionTimeMs:ms,consumedCredits:credits,meta:{comparisonKey:'input-0'},batch,outputs:[{kind:'image'},{kind:'image'}]});
 const tasks=[task('a',1000,10),task('b',3000,4),task('c',5000,6)];
@@ -21,4 +22,11 @@ const legacy=tasks.map((t,i)=>({...t,batch:null,createdAt:`2026-10-09T01:00:0${i
 assert.equal(groupTasks(legacy).length,1);assert.equal(groupTasks(legacy)[0].recovered,true);
 assert.equal(groupTasks([...legacy,{...legacy[0],id:'separate',createdAt:'2026-10-09T01:05:00Z'}]).length,2,'separate legacy submissions stay separate');
 assert.equal(groupTasks([...tasks,{...tasks[0],id:'other',batch:{...batch,id:'other-batch'}}]).length,2,'explicit batch identity overrides identical prompts');
-console.log('Batch identity, timing/cost rankings, missing data, per-output allocation, input isolation, legacy recovery, and shared USD formatting passed.');
+assert.deepEqual(mediaLayout('image',{aspectRatio:'1:1'}),{ratio:1,shape:'square',band:'standard',columns:3});
+assert.deepEqual(mediaLayout('image',{ratio:'16:9'}),{ratio:16/9,shape:'landscape',band:'wide',columns:2});
+assert.deepEqual(mediaLayout('image',{aspectRatio:'9:16'}),{ratio:9/16,shape:'portrait',band:'standard',columns:3});
+assert.equal(mediaLayout('image',{width:1280,height:720},{width:784,height:1392}).shape,'portrait','actual output dimensions override requested landscape settings');
+assert.equal(mediaLayout('image',{width:1024,height:1024,ratio:'16:9'}).ratio,1,'explicit pixel dimensions override ratio presets');
+for(const ratio of ['adaptive','auto','0:9','16:0','invalid'])assert.equal(mediaLayout('image',{ratio}).ratio,1,'unknown ratios safely default to square until the output loads');
+assert.equal(mediaLayout('video',{}).ratio,16/9);
+console.log('Batch identity, timing/cost rankings, missing data, per-output allocation, input isolation, legacy recovery, shared USD formatting, and ratio-aware galleries passed.');
