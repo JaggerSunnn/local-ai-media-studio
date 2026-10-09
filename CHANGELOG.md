@@ -1,5 +1,21 @@
 # Changelog
 
+## Credit consumption display — 2026-10-09
+
+- Added numeric-string credit parsing and authenticated usage backfill for completed tasks.
+- Displayed Consumed credits on result cards and Total consumed with usage coverage per batch.
+- Renamed the green minimum-consumption badge Cheapest, with shared formatting for later USD display.
+
+
+## Generation comparisons — 2026-10-09
+
+- Grouped each submission under a sticky prompt/input/settings summary and model result cards.
+- Added actual timing/credit metadata, per-output cost display, and data-based Fastest/Lowest cost tags.
+- Added Use as input, download, mute/unmute, and shared credits/USD display configuration.
+- Removed Saved locally tags and protected hosted preview/reuse ownership.
+- Added mouse hover previews for video/audio result cards, with pause-on-leave, mute preservation, and touch/manual-control fallback.
+
+
 ## Voice library update — 2026-10-09
 
 - Added a searchable, scrollable Common/Pro voice library with language/gender filters and official sample playback.

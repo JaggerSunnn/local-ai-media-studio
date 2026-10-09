@@ -10,6 +10,7 @@ import {capabilities,resolveLaunchModel} from '../public/launch-config.js';
 import {ttsLanguages,languageLabel} from '../public/languages.js';
 
 let fakePort;
+let reportedCreditValue='2';
 const providerRequests=[];
 const fake=createServer(async(req,res)=>{
   if(req.url==='/result.png'){
@@ -18,7 +19,7 @@ const fake=createServer(async(req,res)=>{
   if(req.url.startsWith('/api/async/')){const chunks=[];for await(const chunk of req)chunks.push(chunk);providerRequests.push({path:req.url,body:JSON.parse(Buffer.concat(chunks).toString())});}
   const result=req.url==='/api/remaining_credits'?{code:0,data:{available_credits:100}}:
     req.url.startsWith('/api/async/')?{code:0,data:{taskId:'fake-provider-task'}}:
-    req.url==='/api/getAsyncResult'?{code:0,data:{task:{status:3,creditsConsumed:2},images:[{imageUrl:`http://127.0.0.1:${fakePort}/result.png`}]}}:
+    req.url==='/api/getAsyncResult'?{code:0,data:{task:{status:3,creditsConsumed:reportedCreditValue,executionTime:1250},images:[{imageUrl:`http://127.0.0.1:${fakePort}/result.png`}]}}:
     {code:404,message:'Unknown test endpoint'};
   res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify(result));
 });
@@ -26,7 +27,7 @@ await new Promise(resolve=>fake.listen(0,'127.0.0.1',resolve));
 fakePort=fake.address().port;
 const dataDir=await mkdtemp(join(tmpdir(),'local-studio-test-'));
 const appPort=18878;
-const env={...process.env,LOCAL_STUDIO_BASE_URL:`http://127.0.0.1:${fakePort}`,LOCAL_STUDIO_DATA_DIR:dataDir,PORT:String(appPort),LOCAL_STUDIO_MOCK:'false'};
+const env={...process.env,LOCAL_STUDIO_BASE_URL:`http://127.0.0.1:${fakePort}`,LOCAL_STUDIO_DATA_DIR:dataDir,PORT:String(appPort),LOCAL_STUDIO_MOCK:'false',LOCAL_STUDIO_COST_UNIT:'usd',LOCAL_STUDIO_USD_PER_CREDIT:'0.01'};
 delete env.LOCAL_STUDIO_API_KEY;
 const app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url).pathname,env,stdio:'ignore'});
 const base=`http://127.0.0.1:${appPort}`;
@@ -34,6 +35,7 @@ try{
   let ready=false;
   for(let i=0;i<40;i++){try{const response=await fetch(`${base}/api/health`);if(response.ok){ready=true;break}}catch{}await delay(100)}
   assert.ok(ready,'local server started');
+  const health=await fetch(`${base}/api/health`).then(response=>response.json());assert.deepEqual(health.billing,{unit:'usd',usdPerCredit:0.01},'one server setting controls every cost display');
   const publicVoices=await fetch(`${base}/api/voices`);
   assert.equal(publicVoices.status,200,'browsing voices does not require an API key');
   const voiceDirectory=await publicVoices.json();
@@ -53,6 +55,16 @@ try{
   assert.equal(new Set(created.map(result=>result.task.id)).size,3);
   const polled=await fetch(`${base}/api/tasks/${created[0].task.id}`,{headers:{cookie}}).then(response=>response.json());
   assert.equal(polled.task.status,'succeeded');
+  assert.equal(polled.task.executionTimeMs,1250,'provider inference milliseconds are retained');
+  assert.equal(polled.task.consumedCredits,2,'reported credits are retained');
+  const savedOutput=polled.task.outputs[0].localUrl;
+  assert.equal((await fetch(`${base}/api/tasks/${created[0].task.id}/usage`,{method:'POST'})).status,401,'usage lookup requires the task account key');
+  reportedCreditValue='7.5';
+  const usage=await fetch(`${base}/api/tasks/${created[0].task.id}/usage`,{method:'POST',headers:{cookie}}).then(response=>response.json());
+  assert.equal(usage.task.consumedCredits,7.5,'a finished task can backfill a delayed billing value');
+  assert.equal(usage.task.outputs[0].localUrl,savedOutput,'usage refresh preserves saved media');
+  assert.equal(usage.task.status,'succeeded');
+  reportedCreditValue='2';
   assert.equal(polled.task.outputs[0].kind,'image');
   assert.match(polled.task.outputs[0].localUrl,/^\/local\/outputs\//);
   assert.equal((await readdir(join(dataDir,'outputs'))).length,1);
@@ -65,6 +77,9 @@ try{
   assert.equal(offlineHistory.tasks.length,3);
   const saved=await readFile(join(dataDir,'tasks.json'),'utf8');
   assert.ok(!saved.includes(testKey),'API Key is not persisted in task history');
+  const reusedResponse=await fetch(`${base}/api/tasks/${created[0].task.id}/outputs/0/use-as-input`,{method:'POST'});
+  assert.equal(reusedResponse.status,201,'a completed saved result can be reused without another paid generation');
+  const reused=await reusedResponse.json();assert.equal(reused.type,'image');assert.match(reused.previewUrl,/^\/local\/outputs\//);
   const postTask=payload=>fetch(`${base}/api/tasks`,{method:'POST',headers:{'content-type':'application/json',cookie},body:JSON.stringify(payload)});
   let launchCases=0;
   for(const [category,definition] of Object.entries(capabilities))for(const op of definition.operations){
@@ -112,6 +127,16 @@ try{
     const response=await postTask({modelId:tts.id,inputs:{audioId:voiceId,text:'A short sample'},options:ttsOptions,meta:{category:'audio',operation:'text-to-speech'}});
     assert.equal(response.status,201);assert.equal(providerRequests.at(-1).body.audioId,voiceId,'selected and manually entered IDs reach the provider unchanged');
   }
+  const assetResponse=await fetch(`${base}/api/assets`,{method:'POST',headers:{'content-type':'image/png','x-file-name':'input.png',cookie},body:Buffer.from('89504e470d0a1a0a','hex')});
+  const asset=await assetResponse.json();assert.match(asset.previewUrl,/^\/local\/uploads\//);
+  assert.equal((await fetch(`${base}${asset.previewUrl}`)).status,200);
+  const batchId='11111111-1111-4111-8111-111111111111';
+  const grouped={...payload,meta:{category:'image',operation:'text-to-image',comparisonKey:'input-0'},batch:{id:batchId,category:'image',operation:'text-to-image',prompt:'Grouped prompt',modelIds:['flux-text-image'],options:payload.options,assets:[{assetId:asset.assetId}],expectedTasks:2}};
+  const groupedResponses=await Promise.all([postTask(grouped),postTask(grouped)]);
+  const groupRecords=await Promise.all(groupedResponses.map(response=>response.json()));
+  assert.equal(groupRecords[0].task.batch.id,batchId);assert.deepEqual(groupRecords[0].task.batch,groupRecords[1].task.batch);
+  assert.equal(groupRecords[0].task.batch.assets[0].previewUrl,asset.previewUrl);
+  assert.equal(groupRecords[0].task.consumedCredits,null,'queued tasks do not report zero cost');
   console.log('Local auth, 3-task batch, polling, offline history, output download, and key non-persistence passed.');
 }finally{
   app.kill();

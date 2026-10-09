@@ -8,6 +8,7 @@ import { pipeline } from 'node:stream/promises';
 import models from './catalog.mjs';
 import {capabilities,resolveLaunchModel} from './public/launch-config.js';
 import {normalizeVoices,VOICE_SOURCE} from './voice-catalog.mjs';
+import {reportedCredits} from './provider-usage.mjs';
 
 const ROOT = new URL('.', import.meta.url).pathname;
 const PUBLIC = join(ROOT, 'public');
@@ -21,6 +22,8 @@ const PORT = Number(process.env.PORT || 8788);
 const DEPLOYMENT_MODE = process.env.LOCAL_STUDIO_DEPLOYMENT_MODE === 'hosted' ? 'hosted' : 'local';
 const HOST = process.env.HOST || (DEPLOYMENT_MODE === 'hosted' ? '0.0.0.0' : '127.0.0.1');
 const MAX_TASK_CREDITS = Number(process.env.MAX_TASK_CREDITS || 1000);
+const displayRate=process.env.LOCAL_STUDIO_USD_PER_CREDIT?.trim()?Number(process.env.LOCAL_STUDIO_USD_PER_CREDIT):NaN;
+const billing={unit:process.env.LOCAL_STUDIO_COST_UNIT==='usd'&&Number.isFinite(displayRate)&&displayRate>=0?'usd':'credits',usdPerCredit:Number.isFinite(displayRate)&&displayRate>=0?displayRate:null};
 const sessions = new Map();
 const tasks = new Map();
 const assets = new Map();
@@ -61,9 +64,10 @@ const persist = () => {
 const modelById = id => models.find(model => model.id === id && model.status === 'active');
 const publicModel = ({endpoint,pricing,...model}) => ({...model,pricing});
 
-function validate(model, payload) {
+function validate(model, payload, ownerId) {
   const errors=[]; const inputs=payload.inputs || {}; const options=payload.options || {};
   for (const field of model.inputs) if(field.required && (Array.isArray(inputs[field.id]) ? !inputs[field.id].length : !String(inputs[field.id] ?? '').trim())) errors.push(`Provide ${field.label}`);
+  if(DEPLOYMENT_MODE==='hosted')for(const field of model.inputs.filter(field=>['image','video','audio'].includes(field.type))){for(const id of [inputs[field.id]].flat().filter(Boolean)){if(!/^https?:\/\//.test(id)&&assets.get(id)?.ownerId!==ownerId)errors.push('The input asset is not available to this browser');}}
   for (const field of model.inputs.filter(field=>field.type==='textarea')) if(String(inputs[field.id] || '').length > 4000) errors.push(`${field.label} must be 4,000 characters or fewer`);
   for (const option of model.options || []) {
     const value=options[option.id];
@@ -91,8 +95,8 @@ function estimate(model, options={}) {
   return {credits,label:`${credits} credits`,assumption:`${options.resolution} · ${options.duration} seconds`};
 }
 
-async function dreamPost(path, body, key) {
-  const response=await fetch(`${BASE_URL}${path}`,{method:'POST',headers:{'content-type':'application/json','authorization':`Bearer ${key}`},body:JSON.stringify(body),signal:AbortSignal.timeout(30_000)});
+async function dreamPost(path, body, key,timeout=30_000) {
+  const response=await fetch(`${BASE_URL}${path}`,{method:'POST',headers:{'content-type':'application/json','authorization':`Bearer ${key}`},body:JSON.stringify(body),signal:AbortSignal.timeout(timeout)});
   const data=await response.json().catch(()=>({code:-1,message:`HTTP ${response.status}`}));
   if(!response.ok || data.code!==0) throw Object.assign(new Error(data.message || 'API request failed'),{providerCode:data.code,httpStatus:response.status});
   return data.data || {};
@@ -128,7 +132,22 @@ function normalizeProvider(data) {
   const outputs=[...(data.images||[]).map(x=>({kind:'image',url:x.imageUrl})),...(data.videos||[]).map(x=>({kind:'video',url:x.videoUrl})),...(data.audios||[]).map(x=>({kind:'audio',url:x.audioUrl}))];
   if(data.mattingResult)for(const [name,url] of Object.entries(data.mattingResult))if(typeof url==='string'&&/^https?:\/\//.test(url))outputs.push({kind:'video',url,name});
   if(data.cloneId)outputs.push({kind:'data',items:[{name:'Cloned voice ID',value:data.cloneId}]});
-  return {status:map[info.status]||'unknown',outputs,providerCode:info.errorCode,error:info.reason||null,consumedCredits:info.creditsConsumed,expiresAt:info.expire};
+  const usage=reportedCredits(data);
+  return {status:map[info.status]||'unknown',outputs,providerCode:info.errorCode,error:info.reason||null,consumedCredits:usage.credits,usageSource:usage.field,executionTimeMs:typeof info.executionTime==='number'&&info.executionTime>=0?info.executionTime:null,expiresAt:info.expire};
+}
+
+async function refreshUsage(task,key){
+  if(!task.providerTaskId||task.mode==='mock')return task;
+  try{
+    const data=await dreamPost('/api/getAsyncResult',{taskId:task.providerTaskId},key,12_000);
+    const usage=reportedCredits(data);
+    if(usage.credits!==null){task.consumedCredits=usage.credits;task.usageSource=usage.field;}
+    task.usageCheckedAt=new Date().toISOString();
+    task.usageError=usage.credits===null?'Provider has not returned creditsConsumed.':null;
+    if(typeof data.task?.executionTime==='number'&&data.task.executionTime>=0)task.executionTimeMs=data.task.executionTime;
+    task.usageFields={task:Object.keys(data.task||{}),data:Object.keys(data)};
+  }catch{task.usageError='Usage lookup failed; reconnect the task owner’s API key or check provider retention.';}
+  await persist();return task;
 }
 
 const outputExtensions={image:'.jpg',video:'.mp4',audio:'.mp3'};
@@ -187,6 +206,21 @@ function ownerFor(req,res){
 }
 function taskForOwner(id,ownerId){const task=tasks.get(id);return task&&(DEPLOYMENT_MODE==='local'||task.ownerId===ownerId)?task:null;}
 function taskForClient(task){if(!task)return task;const {ownerId,...safe}=task;if(DEPLOYMENT_MODE==='hosted'&&safe.outputs)safe.outputs=safe.outputs.map(({localPath,...output})=>output);return safe;}
+function safeBatch(body,ownerId){
+  const source=body.batch;if(!source)return null;
+  if(!/^[a-f0-9-]{36}$/i.test(source.id||''))throw Object.assign(new Error('Invalid batch ID'),{status:422});
+  const existing=[...tasks.values()].find(task=>task.batch?.id===source.id&&(DEPLOYMENT_MODE==='local'||task.ownerId===ownerId));
+  if(existing){if(!existing.batch.modelIds.includes(body.modelId)||existing.batch.operation!==body.meta?.operation||existing.batch.category!==body.meta?.category)throw Object.assign(new Error('Batch task mismatch'),{status:422});return existing.batch;}
+  const op=capabilities[source.category]?.operations.find(item=>item.id===source.operation);
+  const modelIds=[...new Set(source.modelIds||[])].filter(id=>op?.models.includes(id));
+  if(source.category!==body.meta?.category||source.operation!==body.meta?.operation||!modelIds.includes(body.modelId)||!Number.isInteger(source.expectedTasks)||source.expectedTasks<1||source.expectedTasks>10)throw Object.assign(new Error('Invalid generation batch'),{status:422});
+  const inputAssets=(source.assets||[]).slice(0,40).map(item=>{
+    const asset=assets.get(item.assetId);if(!asset||(DEPLOYMENT_MODE==='hosted'&&asset.ownerId!==ownerId))return null;
+    return {assetId:asset.id,name:asset.name,type:asset.type.split('/')[0],previewUrl:asset.previewUrl||null};
+  }).filter(Boolean);
+  const options=Object.fromEntries(Object.entries(source.options||{}).filter(([key,value])=>['resolution','duration','aspectRatio','ratio','width','height','imageSize','size','quality','language'].includes(key)&&['string','number','boolean'].includes(typeof value)));
+  return {id:source.id,createdAt:new Date().toISOString(),category:source.category,operation:source.operation,prompt:String(source.prompt||'').slice(0,4000),modelIds,options,assets:inputAssets,expectedTasks:source.expectedTasks};
+}
 async function verifyKey(key){
   const response=await fetch(`${BASE_URL}/api/remaining_credits`,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded','authorization':`Bearer ${key}`},body:'',signal:AbortSignal.timeout(12_000)});
   const result=await response.json().catch(()=>({}));
@@ -196,7 +230,7 @@ async function verifyKey(key){
 async function handleApi(req,res,url){
   if(!['GET','HEAD'].includes(req.method)&&!sameOrigin(req)) return json(res,403,{error:'Invalid request origin'});
   const ownerId=ownerFor(req,res);
-  if(req.method==='GET'&&url.pathname==='/api/health') return json(res,200,{ok:true,mode:MOCK?'mock':keyFor(req)?'live':'disconnected',deploymentMode:DEPLOYMENT_MODE,keyConfigured:Boolean(keyFor(req)),authSource:sessionFor(req)?'session':ENV_KEY?'environment':null});
+  if(req.method==='GET'&&url.pathname==='/api/health') return json(res,200,{ok:true,mode:MOCK?'mock':keyFor(req)?'live':'disconnected',deploymentMode:DEPLOYMENT_MODE,keyConfigured:Boolean(keyFor(req)),authSource:sessionFor(req)?'session':ENV_KEY?'environment':null,billing});
   if(req.method==='GET'&&url.pathname==='/api/voices'){
     let warning=null;
     if(url.searchParams.get('refresh')==='1')try{await refreshVoiceDirectory()}catch{warning='Provider refresh unavailable';}
@@ -215,6 +249,28 @@ async function handleApi(req,res,url){
     res.appendHeader('set-cookie',`localstudio_session=; ${cookieOptions(req)}; Max-Age=0`);return json(res,200,{connected:false});
   }
   const key=keyFor(req);
+  const usageMatch=url.pathname.match(/^\/api\/tasks\/([a-f0-9-]+)\/usage$/i);
+  if(req.method==='POST'&&usageMatch){
+    if(!key&&!MOCK)return json(res,401,{error:'Connect your API key to fetch reported credits'});
+    const task=taskForOwner(usageMatch[1],ownerId);if(!task)return json(res,404,{error:'Task not found'});
+    if(!['succeeded','failed'].includes(task.status))return json(res,422,{error:'Wait for the task to finish before refreshing usage'});
+    await refreshUsage(task,key);return json(res,200,{task:taskForClient(task)});
+  }
+  const reuseMatch=url.pathname.match(/^\/api\/tasks\/([a-f0-9-]+)\/outputs\/(\d+)\/use-as-input$/i);
+  if(req.method==='POST'&&reuseMatch){
+    const task=taskForOwner(reuseMatch[1],ownerId);if(!task)return json(res,404,{error:'Task not found'});
+    const output=task.outputs?.[Number(reuseMatch[2])];
+    if(task.status!=='succeeded'||!['image','video','audio'].includes(output?.kind))return json(res,422,{error:'This result cannot be used as media input'});
+    const id=randomUUID();let name=`${task.modelId}-${Number(reuseMatch[2])+1}${outputExtensions[output.kind]}`;
+    const localFilename=output.localUrl?.split('/').pop();const path=localFilename?join(OUTPUTS,localFilename):null;
+    if(path)try{await stat(path)}catch{return json(res,422,{error:'The saved result is no longer available'});}
+    const type=output.contentType||({image:'image/jpeg',video:'video/mp4',audio:'audio/mpeg'}[output.kind]);
+    if(!path&&!output.url)return json(res,422,{error:'The result media is not available'});
+    if(localFilename)name=`${task.modelId}-${Number(reuseMatch[2])+1}${extname(localFilename)}`;
+    const previewUrl=output.localUrl||output.url;
+    assets.set(id,{id,ownerId,name,path,type,size:output.bytes||null,previewUrl,...(!path?{providerUrl:output.url}:{})});
+    return json(res,201,{assetId:id,name,type:output.kind,size:output.bytes||null,previewUrl});
+  }
   const taskMatch=url.pathname.match(/^\/api\/tasks\/([a-f0-9-]+)$/i);
   if(req.method==='GET'&&url.pathname==='/api/tasks') return json(res,200,{tasks:[...tasks.values()].filter(task=>DEPLOYMENT_MODE==='local'||task.ownerId===ownerId).slice(-100).reverse().map(taskForClient)});
   if(req.method==='GET'&&taskMatch&&!key&&!MOCK){const task=taskForOwner(taskMatch[1],ownerId);if(!task)return json(res,404,{error:'Task not found'});if(task.status==='succeeded'&&DEPLOYMENT_MODE==='local')await localizeTaskOutputs(task);return json(res,200,{task:taskForClient(task)});}
@@ -228,15 +284,16 @@ async function handleApi(req,res,url){
   }
   if(req.method==='POST'&&url.pathname==='/api/assets'){
     const bytes=await readBody(req,25*1024*1024); const id=randomUUID(); const name=(req.headers['x-file-name']||'upload.bin').replace(/[^a-zA-Z0-9._-]/g,'_'); const path=join(DATA,'uploads',`${id}${extname(name)}`);
-    await writeFile(path,bytes); assets.set(id,{id,name,path,type:req.headers['content-type']||'application/octet-stream',size:bytes.length}); return json(res,201,{assetId:id,name,size:bytes.length,localPath:path});
+    await writeFile(path,bytes);const previewUrl=`/local/uploads/${id}${extname(name)}`;assets.set(id,{id,ownerId,name,path,type:req.headers['content-type']||'application/octet-stream',size:bytes.length,previewUrl});return json(res,201,{assetId:id,name,size:bytes.length,previewUrl,...(DEPLOYMENT_MODE==='local'?{localPath:path}:{})});
   }
   if(req.method==='POST'&&url.pathname==='/api/tasks'){
     const body=await readJson(req); let model=modelById(body.modelId); if(!model) return json(res,404,{error:'Model not found'});
     if(body.meta?.operation){const op=capabilities[body.meta.category]?.operations.find(item=>item.id===body.meta.operation);if(!op?.models.includes(model.id))return json(res,422,{error:'Invalid task and model combination'});model=resolveLaunchModel(model,op.id);}
-    const errors=validate(model,body); if(errors.length) return json(res,422,{error:errors[0],details:errors,creditsConsumed:0});
+    const errors=validate(model,body,ownerId); if(errors.length) return json(res,422,{error:errors[0],details:errors,creditsConsumed:0});
     const estimateData=estimate(model,body.options); if(estimateData.credits>MAX_TASK_CREDITS) return json(res,422,{error:'Estimated usage exceeds the per-task limit',creditsConsumed:0});
-    const safeMeta={category:String(body.meta?.category||'').slice(0,24),operation:String(body.meta?.operation||'').slice(0,48),prompt:String(body.meta?.prompt||'').slice(0,500),label:String(body.meta?.label||model.label).slice(0,180)};
-    const id=randomUUID(); const task={id,ownerId,modelId:model.id,status:'queued',progress:4,mode:MOCK?'mock':'live',estimatedCredits:estimateData.credits,consumedCredits:0,options:body.options,meta:safeMeta,inputFingerprint:createHash('sha256').update(JSON.stringify(body.inputs)).digest('hex').slice(0,16),createdAt:new Date().toISOString(),policyVersion:'2026-09-23'};
+    const safeMeta={category:String(body.meta?.category||'').slice(0,24),operation:String(body.meta?.operation||'').slice(0,48),prompt:String(body.meta?.prompt||'').slice(0,4000),label:String(body.meta?.label||model.label).slice(0,180),comparisonKey:String(body.meta?.comparisonKey||'default').slice(0,80),variantLabel:String(body.meta?.variantLabel||'').slice(0,120)};
+    const batch=safeBatch(body,ownerId);
+    const id=randomUUID(); const task={id,ownerId,modelId:model.id,status:'queued',progress:4,mode:MOCK?'mock':'live',estimatedCredits:estimateData.credits,consumedCredits:null,executionTimeMs:null,batch,options:body.options,meta:safeMeta,inputFingerprint:createHash('sha256').update(JSON.stringify(body.inputs)).digest('hex').slice(0,16),createdAt:new Date().toISOString(),policyVersion:'2026-09-23'};
     tasks.set(id,task); await persist();
     if(model.utility==='voice-catalog'){
       const selected=voices.filter(voice=>(!body.options.type||body.options.type==='all'||voice.type===body.options.type)&&(!body.options.language||voice.language===body.options.language)&&(!body.options.timbre||body.options.timbre==='all'||voice.timbre===body.options.timbre));
@@ -261,7 +318,8 @@ async function serveLocalOutput(req,res,path){
 const server=http.createServer(async(req,res)=>{
   try{
     const url=new URL(req.url,`http://${req.headers.host||'localhost'}`); if(url.pathname.startsWith('/api/')){const handled=await handleApi(req,res,url);if(handled!==false)return;}
-    if(url.pathname.startsWith('/local/outputs/')){const filename=decodeURIComponent(url.pathname.slice('/local/outputs/'.length));if(!/^[a-f0-9-]+-\d+\.[a-z0-9]{2,5}$/i.test(filename))return json(res,403,{error:'Forbidden'});return serveLocalOutput(req,res,join(OUTPUTS,filename));}
+    if(url.pathname.startsWith('/local/outputs/')){const filename=decodeURIComponent(url.pathname.slice('/local/outputs/'.length));if(!/^[a-f0-9-]+-\d+\.[a-z0-9]{2,5}$/i.test(filename))return json(res,403,{error:'Forbidden'});if(DEPLOYMENT_MODE==='hosted'){const task=taskForOwner(filename.replace(/-\d+\.[a-z0-9]+$/i,''),ownerFor(req,res));if(!task)return json(res,404,{error:'Output not found'});}return serveLocalOutput(req,res,join(OUTPUTS,filename));}
+    if(url.pathname.startsWith('/local/uploads/')){const filename=decodeURIComponent(url.pathname.slice('/local/uploads/'.length));if(!/^[a-f0-9-]{36}\.[a-z0-9]{2,5}$/i.test(filename))return json(res,403,{error:'Forbidden'});if(DEPLOYMENT_MODE==='hosted'){const asset=assets.get(filename.replace(/\.[a-z0-9]+$/i,''));if(asset?.ownerId!==ownerFor(req,res))return json(res,404,{error:'Asset not found'});}return serveLocalOutput(req,res,join(DATA,'uploads',filename));}
     const rel=url.pathname==='/'?'index.html':url.pathname.slice(1); const path=normalize(join(PUBLIC,rel)); if(!path.startsWith(PUBLIC))return json(res,403,{error:'Forbidden'});
     const info=await stat(path); if(info.isDirectory())return json(res,404,{error:'Not found'}); res.writeHead(200,{'content-type':types[extname(path)]||'application/octet-stream'});createReadStream(path).pipe(res);
   }catch(error){json(res,error.status||500,{error:error.message||'Server error'});}

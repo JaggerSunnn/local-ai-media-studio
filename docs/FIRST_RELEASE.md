@@ -62,3 +62,25 @@ The source is the public website's `/s/api-playground/dream_api/v1/list_audio` e
 ## Web feature view
 
 The standalone top navigation and Install app entry are hidden from the generation interface. The API key connection button and status are located in the composer toolbar, so the feature can sit inside a host website without duplicating its navigation.
+
+## Grouped model comparisons
+
+Each Run captures one batch ID, selected models, full prompt, requested settings, original media previews, and expected task count. The left summary sticks within that batch while the right cards scroll. Repeated runs and different input variants have separate comparison keys. The page restores submissions from the last 24 hours without adding a separate Library navigation; task files remain stored according to the existing local retention behavior. Older records with matching fingerprints/prompts and submissions within two seconds can be recovered as an explicitly labeled group; missing input previews and costs are not fabricated.
+
+Cards show model name, output specifications, file size, time, and cost. Provider executionTime is retained as milliseconds and shown as Generation time. When unavailable, measured time between local creation and completion is labeled Elapsed; it includes queue and polling. Fastest uses one consistent timing basis within the comparison. Cheapest requires reported credits for every successful compared model. Both tags wait until all expected tasks settle, require at least two successful distinct models, allow ties, and exclude mock tasks. Missing credits remain Credits pending. Multi-output task charges are divided evenly per media output and identified as an allocation in the tooltip.
+
+The Saved locally card tag is removed. Use as input registers a saved output as a new input asset, using local media when available and automatically switching to a compatible task if the current task cannot accept that media type. Download remains available. Audio/video cards have mute/unmute controls, and playback state is retained when another model finishes. Hosted previews and reuse are checked against the browser's task/asset ownership.
+
+### Cost display configuration
+
+Credits are the persisted source of truth. `public/result-model.js` is the shared formatter for the batch, each card, and the estimated-cost toolbar. `LOCAL_STUDIO_COST_UNIT=credits` is the default. To switch all displayed costs to USD, set `LOCAL_STUDIO_COST_UNIT=usd` and `LOCAL_STUDIO_USD_PER_CREDIT` to the account's verified rate before starting the server or in the hosting platform's environment configuration. No individual card templates or saved credit values need editing.
+
+### Hover media previews
+
+Video and audio result media regions start a looping preview on mouse entry and pause on mouse exit. Preview preserves the current mute/unmute choice, starts from zero after reaching the end, and does not trigger on touch pointers. Manual playback already in progress is not stopped by merely moving the mouse out. If the browser blocks automatic playback, the native Play control remains available. Rerendering result groups stops detached preview players and only resumes a hover preview while the pointer remains over that card.
+
+### Reported credit backfill
+
+The adapter accepts finite nonnegative numbers and numeric decimal strings from `task.creditsConsumed` or `creditsConsumed`; estimates are never used as actual charges. Saved completed tasks can refresh usage through an authenticated POST to `/api/tasks/:id/usage`, preserving their existing media and status. The task records the reported field and lookup timestamp for auditing. Connecting a key queries missing recent usage; newly completed tasks with delayed billing can be retried at most three times, ten seconds apart. A batch also offers Fetch credits for a manual retry.
+
+Cards show Consumed credits per output. The green Cheapest badge compares successful models' actual consumption and can coexist with Fastest. Total consumed sums task charges once, not each allocated output charge. Usage records shows how many tasks have a reported value. Partial totals include + pending and remain explicitly incomplete.

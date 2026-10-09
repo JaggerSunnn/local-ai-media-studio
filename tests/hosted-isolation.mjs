@@ -7,10 +7,13 @@ import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
 const fake = createServer(async (req, res) => {
+  if(req.url==='/result.png'){res.writeHead(200,{'content-type':'image/png'});res.end(Buffer.from('89504e470d0a1a0a','hex'));return;}
   const result = req.url === '/api/remaining_credits'
     ? { code: 0, data: { available_credits: 100 } }
     : req.url === '/api/async/flux_text2image'
       ? { code: 0, data: { taskId: `provider-${Date.now()}` } }
+      : req.url==='/api/getAsyncResult'
+        ? {code:0,data:{task:{status:3,creditsConsumed:2,executionTime:1000},images:[{imageUrl:`http://127.0.0.1:${fakePort}/result.png`}]}}
       : { code: 404, message: 'Unknown test endpoint' };
   res.writeHead(200, { 'content-type': 'application/json' });
   res.end(JSON.stringify(result));
@@ -67,6 +70,16 @@ try {
 
   const crossPoll = await fetch(`${base}/api/tasks/${created.task.id}`, { headers: { cookie: browserB } });
   assert.equal(crossPoll.status, 404);
+  assert.equal((await fetch(`${base}/api/tasks/${created.task.id}/usage`,{method:'POST',headers:{cookie:browserB}})).status,404,'another browser cannot refresh private task usage');
+  const ownResult=await fetch(`${base}/api/tasks/${created.task.id}`,{headers:{cookie:browserA}}).then(response=>response.json());
+  const resultUrl=ownResult.task.outputs[0].localUrl;
+  assert.equal((await fetch(`${base}${resultUrl}`,{headers:{cookie:browserA}})).status,200);
+  assert.equal((await fetch(`${base}${resultUrl}`,{headers:{cookie:browserB}})).status,404,'output previews respect browser ownership');
+  assert.equal((await fetch(`${base}/api/tasks/${created.task.id}/outputs/0/use-as-input`,{method:'POST',headers:{cookie:browserB}})).status,404,'another browser cannot reuse this result');
+  assert.equal((await fetch(`${base}/api/tasks/${created.task.id}/outputs/0/use-as-input`,{method:'POST',headers:{cookie:browserA}})).status,201);
+  const uploaded=await fetch(`${base}/api/assets`,{method:'POST',headers:{cookie:browserA,'content-type':'image/png','x-file-name':'reference.png'},body:Buffer.from('89504e470d0a1a0a','hex')}).then(response=>response.json());
+  assert.equal(uploaded.localPath,undefined,'hosted asset responses do not expose filesystem paths');
+  assert.equal((await fetch(`${base}${uploaded.previewUrl}`,{headers:{cookie:browserB}})).status,404,'input previews respect ownership');
   console.log('Hosted browser identity and cross-task isolation passed.');
 } finally {
   app.kill();

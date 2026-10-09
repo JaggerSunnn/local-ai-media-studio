@@ -6,7 +6,7 @@ const output = join(root, 'dist', 'local-ai-media-studio');
 await rm(join(root, 'dist'), { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 
-for (const file of ['server.mjs', 'voice-catalog.mjs', 'catalog.mjs', 'package.json', 'README.md', 'LICENSE', 'SECURITY.md', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', 'CHANGELOG.md', 'start.bat', 'start.command', '.env.example', 'Dockerfile', 'render.yaml']) {
+for (const file of ['server.mjs', 'voice-catalog.mjs', 'provider-usage.mjs', 'catalog.mjs', 'package.json', 'README.md', 'LICENSE', 'SECURITY.md', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', 'CHANGELOG.md', 'start.bat', 'start.command', '.env.example', 'Dockerfile', 'render.yaml']) {
   await cp(join(root, file), join(output, file));
 }
 for (const directory of ['public', 'docs']) await cp(join(root, directory), join(output, directory), { recursive: true });
