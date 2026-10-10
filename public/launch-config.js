@@ -40,11 +40,19 @@ export function settingsModelFor(operationId,models,primary){
   if(operationId==='image-editing')return models.find(model=>model.id==='image-outpainting')||primary;
   return primary;
 }
+export function updateModelSelection(operationId,ids,primaryId,id,checked){
+  const selectedIds=operationId==='image-editing'&&checked?new Set([id]):new Set(ids);
+  if(checked)selectedIds.add(id);else selectedIds.delete(id);
+  if(operationId==='image-editing'&&checked)primaryId=id;
+  if(!selectedIds.has(primaryId))primaryId=[...selectedIds][0]||null;
+  return {selectedIds,primaryId};
+}
 export function resolveLaunchModel(base, operationId) {
   if (!base || base.status !== 'active') return base;
   const model = {...base,label:labels[base.id]||base.label,inputs:base.inputs.map(field=>({...field})),options:base.options.map(option=>({...option}))};
   // One result per request; Runs per model is the sole output quantity control.
   model.options=model.options.map(option=>['n','num'].includes(option.id)?{...option,value:1,hidden:true}:option);
+  if(operationId==='image-editing')model.inputs=model.inputs.map(field=>field.type==='image'?{...field,label:field.id==='face'?'Target image':'Source image'}:field);
   const setDefault = (id,value) => {const option=model.options.find(item=>item.id===id);if(option)option.value=value;};
   if(base.id.startsWith('wan-'))model.settingsNote='Duration and aspect ratio use the model defaults; this endpoint does not expose these controls.';
   if (operationId==='text-to-video') model.inputs=model.inputs.filter(field=>field.type==='textarea');

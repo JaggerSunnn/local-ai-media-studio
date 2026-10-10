@@ -1,5 +1,11 @@
 # Changelog
 
+## Editing tool single selection — 2026-10-10
+
+- Removed Settings markers from all model picker entries.
+- Changed Image Editing to one selected tool at a time, with inputs and settings following that tool. Other tasks retain multiple model selection.
+- Unified editing upload labels as Source image on the left and Target image on the right for Swapface, preserving provider request mappings.
+
 ## Outpainting settings priority — 2026-10-09
 
 - Always displayed Outpainting expansion controls when selected in Image Editing, independent of model selection order or count.

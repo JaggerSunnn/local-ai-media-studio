@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import models from '../catalog.mjs';
-import {capabilities,resolveLaunchModel,settingsModelFor} from '../public/launch-config.js';
+import {capabilities,resolveLaunchModel,settingsModelFor,updateModelSelection} from '../public/launch-config.js';
 import {mediaUploadLimit,mergeMediaFiles,remapMediaFiles,mergeReferenceFiles,referenceKind} from '../public/composer-inputs.js';
 
 const fields=[{id:'first',type:'image'},{id:'last',type:'image'},{id:'references',type:'image',multiple:true,max:4}];
@@ -27,6 +27,24 @@ for(const category of Object.values(capabilities))for(const operation of categor
 }
 assert.ok(countControls>0);
 const editingIds=['image-enhance','image-remove-bg','image-colorize','image-outpainting'];
+for(const first of [...editingIds,'image-swap-face'])for(const next of [...editingIds,'image-swap-face']){
+  const selection=updateModelSelection('image-editing',new Set([first]),first,next,true);
+  assert.deepEqual([...selection.selectedIds],[next],'editing tools replace the previous selection');
+  assert.equal(selection.primaryId,next,'inputs and settings follow the selected editing tool');
+}
+const multi=updateModelSelection('text-to-video',new Set(['one']),'one','two',true);
+assert.deepEqual([...multi.selectedIds],['one','two'],'other tasks retain multiple model selection');
+assert.equal(multi.primaryId,'one');
+assert.equal(updateModelSelection('text-to-video',multi.selectedIds,multi.primaryId,'one',false).primaryId,'two');
+for(const id of [...editingIds,'image-swap-face']){
+  const model=resolveLaunchModel(models.find(model=>model.id===id),'image-editing');
+  assert.equal(model.inputs[0].label,'Source image','all editing tools share the left source-image slot');
+  if(id==='image-swap-face'){
+    assert.equal(model.inputs[1].label,'Target image');
+    assert.equal(model.inputs[0].id,'image');assert.equal(model.inputs[0].api,'url');
+    assert.equal(model.inputs[1].id,'face');assert.equal(model.inputs[1].api,'faceImgUrl','labels do not swap the provider request fields');
+  }
+}
 const permutations=items=>items.length?items.flatMap((item,index)=>permutations(items.filter((_,i)=>i!==index)).map(rest=>[item,...rest])):[[]];
 for(let mask=1;mask<16;mask++){
   const ids=editingIds.filter((_,index)=>mask&(1<<index));
