@@ -9,7 +9,6 @@ import models from './catalog.mjs';
 import {capabilities,resolveLaunchModel} from './public/launch-config.js';
 import {normalizeVoices,VOICE_SOURCE} from './voice-catalog.mjs';
 import {reportedCredits} from './provider-usage.mjs';
-import {taskSource,sourceLabels,retainedHistory} from './public/history-model.js';
 
 const ROOT = new URL('.', import.meta.url).pathname;
 const PUBLIC = join(ROOT, 'public');
@@ -206,7 +205,7 @@ function ownerFor(req,res){
   return owner;
 }
 function taskForOwner(id,ownerId){const task=tasks.get(id);return task&&(DEPLOYMENT_MODE==='local'||task.ownerId===ownerId)?task:null;}
-function taskForClient(task){if(!task)return task;const {ownerId,...safe}=task;safe.source=taskSource(task);if(DEPLOYMENT_MODE==='hosted'&&safe.outputs)safe.outputs=safe.outputs.map(({localPath,...output})=>output);return safe;}
+function taskForClient(task){if(!task)return task;const {ownerId,...safe}=task;if(DEPLOYMENT_MODE==='hosted'&&safe.outputs)safe.outputs=safe.outputs.map(({localPath,...output})=>output);return safe;}
 function safeBatch(body,ownerId){
   const source=body.batch;if(!source)return null;
   if(!/^[a-f0-9-]{36}$/i.test(source.id||''))throw Object.assign(new Error('Invalid batch ID'),{status:422});
@@ -273,7 +272,6 @@ async function handleApi(req,res,url){
     return json(res,201,{assetId:id,name,type:output.kind,size:output.bytes||null,previewUrl});
   }
   const taskMatch=url.pathname.match(/^\/api\/tasks\/([a-f0-9-]+)$/i);
-  if(req.method==='GET'&&url.pathname==='/api/history')return json(res,200,{tasks:retainedHistory([...tasks.values()].filter(task=>DEPLOYMENT_MODE==='local'||task.ownerId===ownerId)).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,100).map(taskForClient),limit:100});
   if(req.method==='GET'&&url.pathname==='/api/tasks') return json(res,200,{tasks:[...tasks.values()].filter(task=>DEPLOYMENT_MODE==='local'||task.ownerId===ownerId).slice(-100).reverse().map(taskForClient)});
   if(req.method==='GET'&&taskMatch&&!key&&!MOCK){const task=taskForOwner(taskMatch[1],ownerId);if(!task)return json(res,404,{error:'Task not found'});if(task.status==='succeeded'&&DEPLOYMENT_MODE==='local')await localizeTaskOutputs(task);return json(res,200,{task:taskForClient(task)});}
   if(!key&&!MOCK&&url.pathname!=='/api/models'&&url.pathname!=='/api/storage'&&url.pathname!=='/api/estimate')return json(res,401,{error:'Connect your API key first'});
@@ -291,10 +289,9 @@ async function handleApi(req,res,url){
   if(req.method==='POST'&&url.pathname==='/api/tasks'){
     const body=await readJson(req); let model=modelById(body.modelId); if(!model) return json(res,404,{error:'Model not found'});
     if(body.meta?.operation){const op=capabilities[body.meta.category]?.operations.find(item=>item.id===body.meta.operation);if(!op?.models.includes(model.id))return json(res,422,{error:'Invalid task and model combination'});model=resolveLaunchModel(model,op.id);}
-    if(body.meta?.source!==undefined&&!Object.hasOwn(sourceLabels,body.meta.source))return json(res,422,{error:'Invalid history source'});
     const errors=validate(model,body,ownerId); if(errors.length) return json(res,422,{error:errors[0],details:errors,creditsConsumed:0});
     const estimateData=estimate(model,body.options); if(estimateData.credits>MAX_TASK_CREDITS) return json(res,422,{error:'Estimated usage exceeds the per-task limit',creditsConsumed:0});
-    const safeMeta={source:body.meta?.source||'api_request',category:String(body.meta?.category||'').slice(0,24),operation:String(body.meta?.operation||'').slice(0,48),prompt:String(body.meta?.prompt??body.inputs?.[model.inputs.find(field=>field.type==='textarea')?.id]??'').slice(0,4000),label:String(body.meta?.label||model.label).slice(0,180),comparisonKey:String(body.meta?.comparisonKey||'default').slice(0,80),variantLabel:String(body.meta?.variantLabel||'').slice(0,120)};
+    const safeMeta={category:String(body.meta?.category||'').slice(0,24),operation:String(body.meta?.operation||'').slice(0,48),prompt:String(body.meta?.prompt||'').slice(0,4000),label:String(body.meta?.label||model.label).slice(0,180),comparisonKey:String(body.meta?.comparisonKey||'default').slice(0,80),variantLabel:String(body.meta?.variantLabel||'').slice(0,120)};
     const batch=safeBatch(body,ownerId);
     const id=randomUUID(); const task={id,ownerId,modelId:model.id,status:'queued',progress:4,mode:MOCK?'mock':'live',estimatedCredits:estimateData.credits,consumedCredits:null,executionTimeMs:null,batch,options:body.options,meta:safeMeta,inputFingerprint:createHash('sha256').update(JSON.stringify(body.inputs)).digest('hex').slice(0,16),createdAt:new Date().toISOString(),policyVersion:'2026-09-23'};
     tasks.set(id,task); await persist();

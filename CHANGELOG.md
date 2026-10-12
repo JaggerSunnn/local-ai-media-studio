@@ -1,12 +1,5 @@
 # Changelog
 
-## Recent History page — 2026-10-12
-
-- Added a separate history page with output previews, prompts, model names, relative times, source/status/search filters, grid/list views, and preview visibility controls.
-- Recorded Interface provenance for Create anything and API request provenance for other task submissions; legacy interface records remain recognizable.
-- Added an owner-scoped history endpoint for the latest 100 retained tasks and kept API request records out of the creation canvas.
-- Added a shared integration contract for endpoint Playgrounds; remote website history is not automatically imported.
-
 ## Editing tool single selection — 2026-10-10
 
 - Removed Settings markers from all model picker entries.
