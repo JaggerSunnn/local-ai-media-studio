@@ -137,6 +137,15 @@ try{
   assert.equal(groupRecords[0].task.batch.id,batchId);assert.deepEqual(groupRecords[0].task.batch,groupRecords[1].task.batch);
   assert.equal(groupRecords[0].task.batch.assets[0].previewUrl,asset.previewUrl);
   assert.equal(groupRecords[0].task.consumedCredits,null,'queued tasks do not report zero cost');
+  const interfaceResponse=await postTask({...payload,meta:{source:'interface',prompt:'History from the interface'}});
+  const interfaceTask=(await interfaceResponse.json()).task;
+  assert.equal(interfaceTask.source,'interface');
+  const recentHistory=await fetch(`${base}/api/history`).then(response=>response.json());
+  assert.ok(recentHistory.tasks.some(task=>task.id===interfaceTask.id&&task.meta.prompt==='History from the interface'));
+  const apiTask=recentHistory.tasks.find(task=>task.id===groupRecords[0].task.id);
+  assert.equal(apiTask.source,'api_request','untagged API submissions remain API requests, even with operation metadata');
+  assert.equal(apiTask.meta.prompt,'A quiet lake','API request prompts are captured from the actual input');
+  assert.equal((await postTask({...payload,meta:{source:'invalid'}})).status,422,'invalid sources fail before provider submission');
   console.log('Local auth, 3-task batch, polling, offline history, output download, and key non-persistence passed.');
 }finally{
   app.kill();

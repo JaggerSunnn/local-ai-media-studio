@@ -80,6 +80,11 @@ try {
   const uploaded=await fetch(`${base}/api/assets`,{method:'POST',headers:{cookie:browserA,'content-type':'image/png','x-file-name':'reference.png'},body:Buffer.from('89504e470d0a1a0a','hex')}).then(response=>response.json());
   assert.equal(uploaded.localPath,undefined,'hosted asset responses do not expose filesystem paths');
   assert.equal((await fetch(`${base}${uploaded.previewUrl}`,{headers:{cookie:browserB}})).status,404,'input previews respect ownership');
+  const ownHistory=await fetch(`${base}/api/history`,{headers:{cookie:browserA}}).then(response=>response.json());
+  const otherHistory=await fetch(`${base}/api/history`,{headers:{cookie:browserB}}).then(response=>response.json());
+  assert.equal(ownHistory.tasks.length,1);assert.equal(otherHistory.tasks.length,0,'history respects browser ownership');
+  assert.equal(ownHistory.tasks[0].source,'api_request');assert.equal(ownHistory.tasks[0].meta.prompt,'Isolated task');
+  assert.equal(ownHistory.tasks[0].ownerId,undefined);assert.equal(ownHistory.tasks[0].outputs[0].localPath,undefined,'hosted history hides filesystem paths');
   console.log('Hosted browser identity and cross-task isolation passed.');
 } finally {
   app.kill();

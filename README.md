@@ -2,7 +2,7 @@
 
 > Build more, spend less, switch faster.
 
-An independent open-source generation workspace. Choose a task, compare compatible models, upload media, run batches, and manage results from one responsive interface.
+An independent open-source generation workspace with a separate Recent History page. Choose a task, compare compatible models, upload media, run batches, and manage results from one responsive interface.
 
 > **Independent project:** This repository is maintained by its open-source contributors. It is not an official product of, published by, sponsored by, or affiliated with DreamAPI, DreamFace, or NewportAI. Users connect their own API credentials to compatible provider endpoints.
 

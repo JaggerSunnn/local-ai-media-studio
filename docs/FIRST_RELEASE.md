@@ -88,3 +88,13 @@ Cards show Consumed credits per output. The green Cheapest badge compares succes
 ## Ratio-aware result gallery
 
 Each prompt submission has a numbered heading and a sticky input summary. Batches are separated by spacing without an extra outer frame. Inside that batch, landscape outputs use two columns per desktop row; square and portrait outputs share a three-column width. Preview height follows the actual output ratio (1:1 is square; 9:16 is taller), so the full image remains visible without a fixed-height letterbox. Actual image/video dimensions override requested settings after loading. Mixed ratios are arranged into landscape and square/portrait bands within the same batch. Smaller screens use two columns, and narrow phones use one.
+
+## Recent History
+
+`/history.html` is a separate page linked from Create anything. It shows one card per media output (or a status card for failed/pending tasks): full preview, prompt, model, relative completion/creation time, and source. It supports source/status/search filters, show/hide previews, grid/list views, details, downloads, and loading more cards. Pending tasks continue polling while the page is open.
+
+`GET /api/history` reads up to 100 retained tasks (API request records have a 24-hour display window; Interface records remain visible while retained locally) and enforces the same hosted browser ownership as task lists and media previews. History reads do not require reconnecting a key. Generating and refreshing unfinished provider tasks still requires a valid session. Existing retention remains 100 tasks in the local task file; this is not an account-wide provider log or unlimited archive.
+
+Create anything sends `meta.source: "interface"`. An API endpoint Playground using this service should send `meta.source: "api_request"` in its normal `POST /api/tasks` request; omitted source defaults to API request. Prompts are captured from the actual text input unless explicitly supplied in metadata. Old records with operation/batch metadata are inferred as Interface. Source labels describe entry points, not access permissions.
+
+The public API website currently has no history connector in this repository. Integrating its Playground requires using the same task/history service and authenticated ownership context, or an authorized backend connector to its existing history store. This page does not read remote account records or accept unauthenticated third-party history imports.
