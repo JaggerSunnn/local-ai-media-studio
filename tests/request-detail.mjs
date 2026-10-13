@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {inputDetails,outputDetails,specificationDetails} from '../public/request-detail.js';
+
+const request={model:'seedance-2.0',prompt:'A quiet street',images:['https://example.test/input.png'],duration:5};
+const current={id:'local-id',providerTaskId:'api-task-id',status:'succeeded',requestRecord:{endpoint:'/api/async/seedance_2',body:request},consumedCredits:0,executionTimeMs:1500,outputs:[{kind:'video',url:'https://example.test/output.mp4',localUrl:'/local/outputs/local-id-0.mp4',localPath:'/private/result.mp4',bytes:1048576}]};
+assert.deepEqual(inputDetails(current).data,request,'recorded input is not mixed with local metadata');
+assert.equal(inputDetails(current).recorded,true);
+const legacy={id:'older-id',meta:{prompt:'Previous prompt'},options:{resolution:'720p'},batch:{assets:[{name:'reference.png',type:'image',previewUrl:'/local/uploads/asset.png'}]},outputs:[]};
+assert.equal(inputDetails(legacy).recorded,false);
+assert.match(inputDetails(legacy).description,/not the original API request/);
+assert.equal(inputDetails(legacy).data.prompt,'Previous prompt');
+assert.deepEqual(inputDetails(legacy).data.saved_settings,{resolution:'720p'});
+const result=outputDetails(current);
+assert.equal(result.task_id,'api-task-id');
+assert.equal(result.credits_consumed,0,'reported zero is retained');
+assert.equal(result.outputs[0].file_size_bytes,1048576);
+assert.equal(result.outputs[0].file_name,'local-id-0.mp4');
+assert.equal(result.outputs[0].localPath,undefined,'JSON output does not expose internal file paths');
+assert.equal(outputDetails({status:'processing'}).credits_consumed,null,'missing cost is not invented');
+assert.deepEqual(outputDetails({status:'failed',error:'Rejected'}).outputs,[]);
+assert.equal(outputDetails({status:'failed',error:'Rejected'}).error,'Rejected');
+assert.deepEqual(outputDetails({outputs:[{kind:'data',items:[{name:'voice_id',value:'voice-1'}]}]}).outputs[0].data,[{name:'voice_id',value:'voice-1'}]);
+console.log('Request details: exact input, labelled legacy summaries, pending/failed/data outputs, zero costs and path privacy passed.');
+
+const specs=specificationDetails({options:{duration:10,resolution:'720p',ratio:'9:16',seed:-1,generateAudio:false,contentProfile:'standard'}},{bytes:8388608},{options:[{id:'generateAudio',label:'Generate audio'}]});
+assert.equal(specs.headline,'10s · 720p · 8.0 MB · 9:16');
+assert.deepEqual(specs.rows,[{label:'Seed',value:'-1'},{label:'Generate audio',value:'Off'}]);
+const imageSpecs=specificationDetails({options:{width:1376,height:768,quality:'high',seed:0}}, {bytes:2048});
+assert.equal(imageSpecs.headline,'1376×768 · 2.0 KB');
+assert.deepEqual(imageSpecs.rows,[{label:'Quality',value:'high'},{label:'Seed',value:'0'}]);
+assert.equal(specificationDetails({options:{duration:5,resolution:'480p',imageSize:'1K',width:1280,height:720,ratio:'16:9'}},{bytes:1024}).headline.split(' · ').length,6,'specifications are never truncated to four values');
+console.log('Detail specifications retain all requested settings, ratio, dimensions, file size and false/zero values.');

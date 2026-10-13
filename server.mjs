@@ -300,7 +300,7 @@ async function handleApi(req,res,url){
       task.status='succeeded';task.progress=100;task.completedAt=new Date().toISOString();task.outputs=[{kind:'data',items:selected.slice(0,100)}];await persist();return json(res,201,{task:taskForClient(task)});
     }
     if(!MOCK){
-      try{if(!model.endpoint)throw new Error('This is a local lookup and does not create a generation task');const provider=await dreamPost(model.endpoint,await providerBody(model,body.inputs,body.options,key),key);task.providerTaskId=provider.taskId;task.status='processing';await persist();}
+      try{if(!model.endpoint)throw new Error('This is a local lookup and does not create a generation task');const requestBody=await providerBody(model,body.inputs,body.options,key);task.requestRecord={endpoint:model.endpoint,body:requestBody};await persist();const provider=await dreamPost(model.endpoint,requestBody,key);task.providerTaskId=provider.taskId;task.status='processing';await persist();}
       catch(error){task.status=error.name==='TimeoutError'?'unknown':'failed';task.error=error.message;task.providerCode=error.providerCode;await persist();return json(res,502,{task:taskForClient(task),error:task.error,creditsConsumed:0});}
     }
     return json(res,201,{task:taskForClient(task)});

@@ -55,6 +55,7 @@ try{
   assert.equal(new Set(created.map(result=>result.task.id)).size,3);
   const polled=await fetch(`${base}/api/tasks/${created[0].task.id}`,{headers:{cookie}}).then(response=>response.json());
   assert.equal(polled.task.status,'succeeded');
+  assert.deepEqual(polled.task.requestRecord,{endpoint:providerRequests[0].path,body:providerRequests[0].body},'detail input records the actual provider request, without authentication headers');
   assert.equal(polled.task.executionTimeMs,1250,'provider inference milliseconds are retained');
   assert.equal(polled.task.consumedCredits,2,'reported credits are retained');
   const savedOutput=polled.task.outputs[0].localUrl;

@@ -92,3 +92,7 @@ Each prompt submission has a numbered heading and a sticky input summary. Batche
 ## Generation history
 
 All retained task records are shown directly on Create anything, grouped by submission. There is no separate Recent History page or 24-hour display cutoff. The local task file retains up to 100 tasks; existing generated files and uploaded assets remain unchanged.
+
+## Result request details
+
+The result modal shows the model name, Task, Prompt, Specifications (requested duration/resolution/ratio/size and other settings, file size and actual loaded output dimensions), Created, then Task ID (the API task ID when available, with the local record ID identified separately). Prompt has a small copy icon on its right. Input and Output are expandable JSON sections with copy icons inside the upper-right corner of each code frame; there is no separate copy toolbar. New live tasks retain the exact provider request body without authentication headers. Older tasks explicitly show a saved input summary because the original request cannot be recovered. Output uses normalized Studio result metadata, not a raw provider response; actual dimensions and video duration are populated when the selected preview loads. The prominent Storage row is removed; local output URLs remain in the result JSON and the workspace storage dialog remains available.
